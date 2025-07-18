@@ -1431,41 +1431,10 @@ class GraphState:
     output_tokens: int = 0
     throughput_tokens_per_second: float = 0.0
 
-def check_vectorstore_node(state: GraphState) -> GraphState:
-    """Check if vector database exists and can skip parsing"""
-    print("Checking for existing vector database...")
-    
-    vs_manager = VectorStoreManager()
-    
-    if vs_manager.vectorstore_exists():
-        vectorstore = vs_manager.load_existing_vectorstore()
-        if vectorstore is not None:
-            stats = vs_manager.get_vectorstore_stats(vectorstore)
-            print(f"Using existing vector database: {stats}")
-            
-            return GraphState(
-                docs=state.docs,
-                vectorstore=vectorstore,
-                question=state.question,
-                skip_parsing=True,
-                parsed_reports=[]
-            )
-    
-    print("No existing vector database found. Will proceed with document parsing.")
-    return GraphState(
-        docs=state.docs,
-        vectorstore=None,
-        question=state.question,
-        skip_parsing=False,
-        parsed_reports=[]
-    )
+
 
 def ingest_node(state: GraphState) -> GraphState:
     """Parse and ingest documents using unified parsing system"""
-    if state.skip_parsing:
-        print("Skipping document parsing - using existing vector database")
-        return state
-    
     print("Starting document ingestion...")
     
     parsed_reports = []
@@ -1529,16 +1498,11 @@ def ingest_node(state: GraphState) -> GraphState:
         docs=all_chunks,
         vectorstore=state.vectorstore,
         question=state.question,
-        parsed_reports=parsed_reports,
-        skip_parsing=state.skip_parsing
+        parsed_reports=parsed_reports
     )
 
 def embed_node(state: GraphState) -> GraphState:
     """Create vector embeddings for document chunks"""
-    if state.skip_parsing and state.vectorstore is not None:
-        print("Using existing vector database - skipping embedding creation")
-        return state
-    
     print("Creating vector embeddings...")
     
     if state.vectorstore is None and state.docs:
@@ -1557,8 +1521,7 @@ def embed_node(state: GraphState) -> GraphState:
         docs=state.docs,
         vectorstore=vectorstore,
         question=state.question,
-        parsed_reports=state.parsed_reports,
-        skip_parsing=state.skip_parsing
+        parsed_reports=state.parsed_reports
     )
 
 # =============================================================================
@@ -1830,7 +1793,6 @@ def retrieval_node(state: GraphState) -> GraphState:
         vector_results=[],
         reranked_results=reranked_results,
         final_context=final_context,
-        skip_parsing=state.skip_parsing,
         start_time=state.start_time,
         retrieval_time=retrieval_time,
         generation_time=state.generation_time,
@@ -1931,7 +1893,6 @@ def rag_node(state: GraphState) -> GraphState:
         reranked_results=state.reranked_results,
         final_context=state.final_context,
         structured_answer=structured_answer,
-        skip_parsing=state.skip_parsing,
         start_time=state.start_time,
         retrieval_time=state.retrieval_time,
         generation_time=generation_time,
@@ -2032,7 +1993,7 @@ def log_node(state: GraphState) -> GraphState:
         "reasoning_summary": state.structured_answer.get('reasoning_summary', ''),
         "retrieval_metrics": metrics,
         "performance_metrics": performance_metrics,
-        "used_existing_vectordb": state.skip_parsing
+        "used_existing_vectordb": False  # Simplified: this info not tracked in new flow
     }
     
     df = pd.DataFrame([log_entry])
@@ -2064,13 +2025,11 @@ def log_node(state: GraphState) -> GraphState:
 # WORKFLOW ORCHESTRATION
 # =============================================================================
 
-# Enhanced workflow with vectorstore checking
+# Simplified workflow without redundant vectorstore checking
 init_workflow = StateGraph(GraphState)
-init_workflow.add_node("check_vectorstore", check_vectorstore_node)
 init_workflow.add_node("ingest", ingest_node)
 init_workflow.add_node("embed", embed_node)
-init_workflow.set_entry_point("check_vectorstore")
-init_workflow.add_edge("check_vectorstore", "ingest")
+init_workflow.set_entry_point("ingest")
 init_workflow.add_edge("ingest", "embed")
 init_workflow.add_edge("embed", END)
 init_graph = init_workflow.compile()
@@ -2087,72 +2046,84 @@ query_workflow.add_edge("log", END)
 query_graph = query_workflow.compile()
 
 # =============================================================================
-# DATABASE CHECK UTILITIES 
-# =============================================================================
-
-def check_existing_database() -> Optional[Tuple[Any, List[Dict]]]:
-    """Check if existing vector database is available and return it with mock parsed_reports"""
-    print("Checking for existing vector database...")
-    vs_manager = VectorStoreManager()
-    
-    if vs_manager.vectorstore_exists():
-        vectorstore = vs_manager.load_existing_vectorstore()
-        if vectorstore is not None:
-            stats = vs_manager.get_vectorstore_stats(vectorstore)
-            print(f"Found existing vector database: {stats}")
-            
-            # Create empty parsed_reports since we're using existing database
-            mock_parsed_reports = []
-            return vectorstore, mock_parsed_reports
-    
-    print("No existing vector database found.")
-    return None
-
-# =============================================================================
 # MAIN EXECUTION
 # =============================================================================
 
 if __name__ == "__main__":
-    print("Enhanced RAG system with user input and adaptive parsing ready.....")
-    print("Enter your questions. Type 'quit' to exit.....")
+    print("Enhanced RAG system with streamlined database management...")
+    print("Initializing system...")
     
     # First, check if existing database is available
-    existing_db_result = check_existing_database()
+    print("Checking for existing vector database...")
+    vs_manager = VectorStoreManager()
     
-    if existing_db_result is not None:
+    if vs_manager.vectorstore_exists():
         # Use existing database
-        vectorstore, parsed_reports = existing_db_result
-        docs = []  # Empty since we're using existing database
-        print("Using existing vector database. Ready for questions!\n")
-        
+        try:
+            vectorstore = vs_manager.load_existing_vectorstore()
+            if vectorstore is not None:
+                stats = vs_manager.get_vectorstore_stats(vectorstore)
+                print(f" Found existing vector database: {stats}")
+                docs = []  # Empty since we're using existing database
+                parsed_reports = []  # Empty for existing database
+                print(" Ready for questions!\n")
+            else:
+                raise Exception("Failed to load existing database")
+        except Exception as e:
+            print(f" Error loading existing database: {e}")
+            print("Will create new database from documents...")
+            vectorstore = None
     else:
-        # No existing database, need to get files from user
-        print("\nNo existing database found. Please provide documents for processing.")
+        print(" No existing vector database found.")
+        vectorstore = None
+    
+    # If no existing database, get files from user and create new database
+    if vectorstore is None:
+        print("\nPlease provide documents for processing:")
         user_files = get_user_files()
         
         if not user_files:
             print("No files provided. Exiting.")
             exit(1)
         
-        print(f"Processing {len(user_files)} user-provided documents...")
+        print(f"\nProcessing {len(user_files)} documents...")
         
+        # Create initial state and process documents
         initial_state = GraphState(
             docs=user_files,
-            question=""
+            question="",
+            skip_parsing=False  # Force processing since no existing database
         )
         
-        state_after_embed = init_graph.invoke(initial_state)
-        
-        if state_after_embed["skip_parsing"]:
-            print("Using existing vector database. Ready for questions.\n")
-        else:
-            print("Documents parsed and embedded successfully. You can now ask questions.\n")
-        
-        docs = state_after_embed["docs"]
-        vectorstore = state_after_embed["vectorstore"]
-        parsed_reports = state_after_embed["parsed_reports"]
+        try:
+            state_after_embed = init_graph.invoke(initial_state)
+            print(" Documents parsed and embedded successfully!")
+            
+            docs = state_after_embed["docs"]
+            vectorstore = state_after_embed["vectorstore"]
+            parsed_reports = state_after_embed["parsed_reports"]
+            
+            # Show parsing summary
+            if parsed_reports:
+                total_pages = sum(len(report['report']['content']['pages']) for report in parsed_reports)
+                total_chunks = len(docs)
+                print(f" Documents processed: {len(parsed_reports)}")
+                print(f" Total pages/slides: {total_pages}")
+                print(f" Text chunks created: {total_chunks}")
+            
+            print(" Ready for questions!\n")
+            
+        except Exception as e:
+            print(f" Error during document processing: {e}")
+            print("This might be due to:")
+            print("  - Missing dependencies")
+            print("  - Corrupted document files")
+            print("  - File format issues")
+            exit(1)
     
     # Main question-answer loop
+    print("Enter your questions below. Type 'quit' to exit.")
+    
     while True:
         question = input("\n" + "=" * 50 + "\nQuestion (or 'quit' to exit): ")
         
@@ -2201,4 +2172,4 @@ if __name__ == "__main__":
         
         print(f"\n" + "=" * 20 + " FINAL ANSWER " + "=" * 20)
         print(result["answer"])
-        print("=" * 55) 
+        print("=" * 55)
