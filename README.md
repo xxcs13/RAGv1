@@ -193,7 +193,7 @@ conda activate rag
 Install required packages using the provided requirements file:
 
 ```bash
-pip install -r new_requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Environment Setup
@@ -215,7 +215,7 @@ echo "ENABLE_TELEMETRY=true" >> .env
 ### Basic Operation
 
 ```bash
-python rag1_un.py
+python rag.py
 ```
 
 ### System Behavior
