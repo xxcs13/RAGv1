@@ -134,7 +134,7 @@ flowchart LR
 
 **Response Style:**
 - Concise and direct
-- 3-4 analysis steps (~100 words)
+- 3-4 analysis steps
 - Focus on data extraction
 - Minimal business interpretation
 
@@ -152,7 +152,7 @@ A: "根據台積電2024年第三季財務報告，該季營收為759.69 billion�
 
 **Response Style:**
 - Comprehensive business analysis
-- 5+ analysis steps (150+ words)
+- 5+ analysis steps 
 - Strategic thinking and market dynamics
 - Business insights and implications
 
