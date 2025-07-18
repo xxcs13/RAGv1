@@ -100,7 +100,7 @@ flowchart LR
     E --> F[Context Assembly]
 
     subgraph "Stage 2-3: Vector Processing"
-        B1[Query Embedding<br/>text-embedding-3-small]
+        B1[Query Embedding]
         B2[ChromaDB Search<br/>Top 30 chunks]
         B1 --> B2
     end
