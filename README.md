@@ -100,12 +100,14 @@ flowchart LR
     E --> F[Context Assembly]
     
     subgraph S1 ["Vector Processing"]
+        direction TB
         B1[Query Embedding]
         B2[ChromaDB Search]
         B1 --> B2
     end
     
     subgraph S2 ["Page Assembly"]
+        direction TB
         D1[Extract Pages]
         D2[Deduplicate]
         D3[Retrieve Full Content]
@@ -113,6 +115,7 @@ flowchart LR
     end
     
     subgraph S3 ["LLM Scoring"]
+        direction TB
         E1[Batch Processing]
         E2[Relevance Scoring]
         E3[Score Fusion]
