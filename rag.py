@@ -2010,7 +2010,7 @@ def log_node(state: GraphState) -> GraphState:
     }
     
     df = pd.DataFrame([log_entry])
-    log_file = "enhanced_rag_qa_log.csv"
+    log_file = "rag_qa_log.csv"
     
     if not os.path.exists(log_file):
         df.to_csv(log_file, index=False)
