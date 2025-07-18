@@ -1424,6 +1424,7 @@ class GraphState:
     
     # Performance tracking fields
     start_time: float = 0.0
+    end_time: float = 0.0
     retrieval_time: float = 0.0
     generation_time: float = 0.0
     total_time: float = 0.0
@@ -1794,6 +1795,7 @@ def retrieval_node(state: GraphState) -> GraphState:
         reranked_results=reranked_results,
         final_context=final_context,
         start_time=state.start_time,
+        end_time=state.end_time,
         retrieval_time=retrieval_time,
         generation_time=state.generation_time,
         total_time=state.total_time,
@@ -1875,8 +1877,8 @@ def rag_node(state: GraphState) -> GraphState:
     generation_time = time.time() - generation_start
     output_tokens = count_tokens(final_answer)
     total_tokens = input_tokens + output_tokens
-    total_time = state.retrieval_time + generation_time
-    throughput = calculate_throughput(total_tokens, total_time)
+    # Note: total_time will be calculated more precisely in log_node with actual end_time
+    throughput = calculate_throughput(total_tokens, state.retrieval_time + generation_time)
     
     print(f"Generation completed in {generation_time:.3f}s")
     print(f"Tokens: {input_tokens} input + {output_tokens} output = {total_tokens} total")
@@ -1894,9 +1896,10 @@ def rag_node(state: GraphState) -> GraphState:
         final_context=state.final_context,
         structured_answer=structured_answer,
         start_time=state.start_time,
+        end_time=state.end_time,
         retrieval_time=state.retrieval_time,
         generation_time=generation_time,
-        total_time=total_time,
+        total_time=state.total_time,  
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         throughput_tokens_per_second=throughput
@@ -1963,6 +1966,14 @@ def log_node(state: GraphState) -> GraphState:
     """Log detailed metrics and results including performance data"""
     print("Logging enhanced metrics...")
     
+    # Record end time and calculate  total time
+    end_time = time.time()
+    total_time = end_time - state.start_time if state.start_time > 0 else 0.0
+    
+    # Recalculate throughput with  total time
+    total_tokens = state.input_tokens + state.output_tokens
+    precise_throughput = calculate_throughput(total_tokens, total_time)
+    
     metrics = {}
     if state.reranked_results:
         scores = [r.get('combined_score', 0) for r in state.reranked_results]
@@ -1974,15 +1985,17 @@ def log_node(state: GraphState) -> GraphState:
                 "final_results": len(state.reranked_results)
             }
     
-    # Performance metrics
+
     performance_metrics = {
         "retrieval_time_s": round(state.retrieval_time, 3),
         "generation_time_s": round(state.generation_time, 3),
-        "total_time_s": round(state.total_time, 3),
+        "total_time_s": round(total_time, 3),  
         "input_tokens": state.input_tokens,
         "output_tokens": state.output_tokens,
-        "total_tokens": state.input_tokens + state.output_tokens,
-        "throughput_tokens_per_second": state.throughput_tokens_per_second
+        "total_tokens": total_tokens,
+        "throughput_tokens_per_second": precise_throughput,  
+        "start_time": state.start_time,
+        "end_time": end_time
     }
     
     log_entry = {
@@ -2019,7 +2032,29 @@ def log_node(state: GraphState) -> GraphState:
     print(f"Throughput: {performance_metrics['throughput_tokens_per_second']} tokens/second")
     print("=" * 50)
     
-    return state
+    # Update state with precise timing information
+    updated_state = GraphState(
+        docs=state.docs,
+        vectorstore=state.vectorstore,
+        question=state.question,
+        retrieved_docs=state.retrieved_docs,
+        answer=state.answer,
+        parsed_reports=state.parsed_reports,
+        vector_results=state.vector_results,
+        reranked_results=state.reranked_results,
+        final_context=state.final_context,
+        structured_answer=state.structured_answer,
+        start_time=state.start_time,
+        end_time=end_time,
+        retrieval_time=state.retrieval_time,
+        generation_time=state.generation_time,
+        total_time=total_time,
+        input_tokens=state.input_tokens,
+        output_tokens=state.output_tokens,
+        throughput_tokens_per_second=precise_throughput
+    )
+    
+    return updated_state
 
 # =============================================================================
 # WORKFLOW ORCHESTRATION
