@@ -40,7 +40,7 @@ This system implements an RAG (Retrieval-Augmented Generation) system with quest
 **Vector Database Management**
 - **VectorStoreManager**: Persistent `ChromaDB` storage and loading
 - **Automatic Detection**: Smart database existence checking
-- **Embedding Model**: OpenAI `text-embedding-3-small` (1536 dimensions)
+- **Embedding Model**: OpenAI `text-embedding-3-small` 
 
 **Retrieval System**
 - **VectorRetriever**: Semantic similarity search with scoring
