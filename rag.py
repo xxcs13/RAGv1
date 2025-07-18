@@ -2066,7 +2066,7 @@ if __name__ == "__main__":
                 print(f" Found existing vector database: {stats}")
                 docs = []  # Empty since we're using existing database
                 parsed_reports = []  # Empty for existing database
-                print(" Ready for questions!\n")
+                print(" Ready for questions........\n")
             else:
                 raise Exception("Failed to load existing database")
         except Exception as e:
