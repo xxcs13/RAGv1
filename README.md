@@ -114,7 +114,7 @@ flowchart LR
 
     subgraph "Stage 5: LLM Scoring"
         E1[Batch Processing<br/>GPT-4o-mini]
-        E2[Relevance Scoring<br/>0.0 - 1.0]
+        E2[Relevance Scoring]
         E3[Score Fusion<br/>70% LLM + 30% Vector]
         E1 --> E2 --> E3
     end
