@@ -1,6 +1,7 @@
 
+# Overview
 
-This system implements an advanced multi-language RAG (Retrieval-Augmented Generation) system with question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
+This system implements an RAG (Retrieval-Augmented Generation) system with  question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
 
 ## Key Design Principles
 
@@ -23,7 +24,7 @@ This system implements an advanced multi-language RAG (Retrieval-Augmented Gener
 ### Smart Database Management
 - Automatic detection of existing vector databases
 - Skip file input when database available
-- Persistent vector storage with ChromaDB
+- Persistent vector storage with `ChromaDB`
 - Intelligent workflow optimization
 
 ## System Architecture
@@ -31,33 +32,33 @@ This system implements an advanced multi-language RAG (Retrieval-Augmented Gener
 ### Core Components
 
 **Document Parsing System**
-- **PDFParser**: Enhanced PDF extraction with pdfplumber + pypdf fallback
+- **PDFParser**: Enhanced PDF extraction with `pdfplumber` + `pypdf` fallback
 - **PPTXParser**: Comprehensive PPTX object extraction (tables, charts, images, groups)
-- **ExcelParser**: Structured Excel parsing with pandas
+- **ExcelParser**: Structured Excel parsing with `pandas`
 - **UnifiedDocumentParser**: Format-specific routing and processing
 
 **Vector Database Management**
-- **VectorStoreManager**: Persistent ChromaDB storage and loading
+- **VectorStoreManager**: Persistent `ChromaDB` storage and loading
 - **Automatic Detection**: Smart database existence checking
-- **Embedding Model**: OpenAI text-embedding-3-small (1536 dimensions)
+- **Embedding Model**: OpenAI `text-embedding-3-small` (1536 dimensions)
 
 **Retrieval System**
 - **VectorRetriever**: Semantic similarity search with scoring
 - **ParentPageAggregator**: Page-level deduplication and context assembly
-- **LLMReranker**: GPT-4o-mini based relevance scoring
+- **LLMReranker**: `GPT-4o-mini` based relevance scoring
 - **HybridRetriever**: Complete six-stage retrieval pipeline
 
 **Response Generation**
 - **EnhancedRAGAnswerPrompt**: Multi-language aware prompt system
 - **Question Type Classification**: Automatic factual vs analytical detection
 - **Business Intelligence**: Strategic analysis for complex queries
-- **Structured Output**: JSON formatted responses with validation
+- **Structured Output**: `JSON` formatted responses with validation
 
 **Performance Tracking**
-- **Token Counting**: Official tiktoken-based calculation
+- **Token Counting**: Official `tiktoken`-based calculation
 - **Time Measurement**: Precise stage-by-stage timing
 - **Throughput Analysis**: Real-time performance metrics
-- **Comprehensive Logging**: CSV-based performance records
+- **Comprehensive Logging**: `CSV`-based performance records
 
 ## System Workflow
 
@@ -178,6 +179,15 @@ A: "從戰略角度分析，台積電正處於AI革命浪潮的核心位置..."
 
 ## Installation
 
+### Environment Creation
+
+Create a new conda environment with Python 3.10:
+
+```bash
+conda create -n rag python=3.10
+conda activate rag
+```
+
 ### Dependencies
 
 Install required packages using the provided requirements file:
@@ -204,7 +214,7 @@ echo "ENABLE_TELEMETRY=true" >> .env
 
 ### Basic Operation
 
-```python
+```bash
 python rag1_un.py
 ```
 
@@ -226,7 +236,7 @@ python rag1_un.py
 
 - **PDF**: Text and table extraction with OCR fallback
 - **PPTX**: Complete object extraction (text, tables, charts, images)
-- **Excel (.xls/.xlsx)**: Structured data parsing with pandas
+- **Excel (.xls/.xlsx)**: Structured data parsing with `pandas`
 
 ### Query Examples
 
@@ -251,7 +261,7 @@ Question: Compare TSMC's advanced process revenue with competitors
 - Total processing time (seconds)
 
 **Token Analysis:**
-- Input token count (precise tiktoken calculation)
+- Input token count (precise `tiktoken` calculation)
 - Output token count
 - Total tokens processed
 - Throughput (tokens/second)
@@ -360,8 +370,8 @@ generation_model = "gpt-4o-mini"
 
 ### Robust Processing
 - Graceful document parsing failures
-- Multiple PDF extraction strategies
-- Safe PPTX object processing
+- Multiple `PDF` extraction strategies
+- Safe `PPTX` object processing
 - Comprehensive exception handling
 
 ### Performance Safeguards
@@ -395,13 +405,13 @@ generation_model = "gpt-4o-mini"
 ### Custom Processing
 - Additional document format support
 - Custom embedding models
-- Alternative LLM providers
+- Alternative `LLM` providers
 - Enhanced business analysis frameworks
 
 ### Integration Options
 - External database connections
-- API endpoint creation
+- `API` endpoint creation
 - Batch processing capabilities
 - Real-time document monitoring
 
-This enhanced RAG system provides a comprehensive solution for multi-language document analysis with intelligent question handling and detailed performance monitoring. 
+This enhanced `RAG` system provides a comprehensive solution for multi-language document analysis with intelligent question handling and detailed performance monitoring. 
