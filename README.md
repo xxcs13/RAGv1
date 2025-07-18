@@ -1,7 +1,7 @@
 
 # Overview
 
-This system implements an RAG (Retrieval-Augmented Generation) system with  question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
+This system implements an RAG (Retrieval-Augmented Generation) system with question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
 
 ## Key Design Principles
 
@@ -23,7 +23,7 @@ This system implements an RAG (Retrieval-Augmented Generation) system with  ques
 
 ### Smart Database Management
 - Automatic detection of existing vector databases
-- Skip file input when database available
+- Skip file input when the database is available
 - Persistent vector storage with `ChromaDB`
 - Intelligent workflow optimization
 
@@ -52,7 +52,7 @@ This system implements an RAG (Retrieval-Augmented Generation) system with  ques
 - **EnhancedRAGAnswerPrompt**: Multi-language aware prompt system
 - **Question Type Classification**: Automatic factual vs analytical detection
 - **Business Intelligence**: Strategic analysis for complex queries
-- **Structured Output**: `JSON` formatted responses with validation
+- **Structured Output**: `JSON`-formatted responses with validation
 
 **Performance Tracking**
 - **Token Counting**: Official `tiktoken`-based calculation
@@ -221,14 +221,14 @@ python rag.py
 ### System Behavior
 
 **First Run (No Database):**
-1. System checks for existing database
-2. Requests file input from user
-3. Processes documents and creates database
+1. System checks for an existing database
+2. Request file input from the user
+3. Processes documents and creates a database
 4. Ready for questions
 
 **Subsequent Runs (Database Exists):**
-1. System detects existing database
-2. Automatically loads database
+1. The system detects the existing database
+2. Automatically loads the database
 3. Immediately ready for questions
 4. No file input required
 
@@ -396,7 +396,7 @@ generation_model = "gpt-4o-mini"
 
 ### System Maintenance
 - Monitor performance logs regularly
-- Clear database when documents change significantly
+- Clear the database when documents change significantly
 - Update dependencies periodically
 - Backup important query logs
 
