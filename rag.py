@@ -2034,7 +2034,7 @@ init_workflow.add_edge("ingest", "embed")
 init_workflow.add_edge("embed", END)
 init_graph = init_workflow.compile()
 
-# Query workflow remains the same
+# Query workflow 
 query_workflow = StateGraph(GraphState)
 query_workflow.add_node("retrieval", retrieval_node)
 query_workflow.add_node("rag", rag_node)
@@ -2077,7 +2077,7 @@ if __name__ == "__main__":
         print(" No existing vector database found.")
         vectorstore = None
     
-    # If no existing database, get files from user and create a new database
+    # If no existing database, get files from the user and create a new database
     if vectorstore is None:
         print("\nPlease provide documents for processing:")
         user_files = get_user_files()
