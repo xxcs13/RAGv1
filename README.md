@@ -1,8 +1,6 @@
-# Enhanced Multi-Language RAG System - rag1_un.py
 
-## Overview
 
-The `rag1_un.py` system implements an advanced multi-language RAG (Retrieval-Augmented Generation) system with intelligent question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
+This system implements an advanced multi-language RAG (Retrieval-Augmented Generation) system with question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
 
 ## Key Design Principles
 
@@ -18,7 +16,7 @@ The `rag1_un.py` system implements an advanced multi-language RAG (Retrieval-Aug
 
 ### Performance Monitoring
 - Real-time processing time measurement (retrieval + generation)
-- Precise token counting using OpenAI's official tiktoken library
+- Precise token counting using OpenAI's official `tiktoken` library
 - Throughput calculation (tokens/second)
 - Comprehensive performance logging
 
@@ -100,11 +98,6 @@ graph TD
     X -->|Yes| J
     X -->|No| Y[Exit System]
 
-    style A fill:#e1f5fe
-    style I fill:#c8e6c9
-    style L fill:#fff3e0
-    style Q fill:#f3e5f5
-    style T fill:#fce4ec
 ```
 
 ## Detailed Retrieval Pipeline
