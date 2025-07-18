@@ -91,6 +91,7 @@ graph LR
 
 ### Six-Stage Retrieval Process
 
+```mermaid
 flowchart LR
     A[Question Input] --> B[Vector Search]
     B --> C[Chunk Retrieval]
@@ -121,6 +122,7 @@ flowchart LR
     B --> B1
     C --> D1
     E3 --> F
+```
 
 ## Question Type Classification
 
