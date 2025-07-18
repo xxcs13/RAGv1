@@ -91,42 +91,36 @@ graph LR
 
 ### Six-Stage Retrieval Process
 
-```mermaid
 flowchart LR
     A[Question Input] --> B[Vector Search]
     B --> C[Chunk Retrieval]
     C --> D[Parent Page Extraction]
     D --> E[LLM Reranking]
     E --> F[Context Assembly]
-    
-    subgraph S1 ["Vector Processing"]
-        direction TB
-        B1[Query Embedding]
-        B2[ChromaDB Search]
+
+    subgraph "Stage 2-3: Vector Processing"
+        B1[Query Embedding<br/>text-embedding-3-small]
+        B2[ChromaDB Search<br/>Top 30 chunks]
         B1 --> B2
     end
-    
-    subgraph S2 ["Page Assembly"]
-        direction TB
-        D1[Extract Pages]
-        D2[Deduplicate]
-        D3[Retrieve Full Content]
+
+    subgraph "Stage 4: Page Assembly"
+        D1[Extract Page Numbers]
+        D2[Deduplicate Pages]
+        D3[Retrieve Full Pages]
         D1 --> D2 --> D3
     end
-    
-    subgraph S3 ["LLM Scoring"]
-        direction TB
-        E1[Batch Processing]
-        E2[Relevance Scoring]
-        E3[Score Fusion]
+
+    subgraph "Stage 5: LLM Scoring"
+        E1[Batch Processing<br/>GPT-4o-mini]
+        E2[Relevance Scoring<br/>0.0 - 1.0]
+        E3[Score Fusion<br/>70% LLM + 30% Vector]
         E1 --> E2 --> E3
     end
-    
-    B --> S1
-    C --> S2
-    D --> S3
-    S3 --> F
-```
+
+    B --> B1
+    C --> D1
+    E3 --> F
 
 ## Question Type Classification
 
