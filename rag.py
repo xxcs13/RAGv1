@@ -13,7 +13,7 @@ import inspect
 
 import pandas as pd
 from pptx import Presentation
-from pypdf import PdfReader  
+from pypdf import PdfReader  # type: ignore
 import pdfplumber
 
 from langchain_community.vectorstores import Chroma
@@ -69,6 +69,15 @@ You are an advanced RAG (Retrieval-Augmented Generation) answering system that r
 Your task is to answer questions based on information from the provided documents, synthesizing insights across multiple sources when relevant.
 
 IMPORTANT: The input documents may contain content in various languages (Traditional Chinese, Simplified Chinese, English, Japanese, etc.). You MUST carefully verify that the content is actually relevant to the user's question regardless of language barriers.
+
+CRITICAL FINANCIAL DATA PRIORITY:
+When dealing with MONEY-RELATED questions (revenue, profit, costs, financial performance, pricing, investment, etc.), you MUST prioritize examining Excel-type documents first. Excel files typically contain the most comprehensive numerical and financial data, including:
+- Detailed financial statements and reports
+- Numerical breakdowns and calculations
+- Time-series financial data
+- Quantitative metrics and KPIs
+- Precise monetary amounts and figures
+Always check Excel sources thoroughly for money-related queries before considering other document types.
 
 QUESTION TYPE ANALYSIS & RESPONSE STRATEGY:
 Before answering, classify the question type and adjust your response style accordingly:
@@ -202,13 +211,15 @@ Here is the question:
 CRITICAL REMINDERS:
 1. MULTI-LANGUAGE PROCESSING: The context may contain documents in various languages (Traditional Chinese, Simplified Chinese, English, Japanese, etc.). You MUST examine ALL content regardless of language to find relevant information.
 
-2. QUESTION TYPE CLASSIFICATION: Determine if this is:
+2. FINANCIAL DATA PRIORITY: For any MONEY-RELATED questions (revenue, profit, costs, financial metrics, etc.), prioritize examining Excel-type sources first as they typically contain the most accurate and detailed financial data.
+
+3. QUESTION TYPE CLASSIFICATION: Determine if this is:
    - FACTUAL/SPECIFIC query (e.g., "What is the revenue?", "How many employees?") → Provide direct, concise answers
    - ANALYTICAL/STRATEGIC query (e.g., "How is performance?", "What are growth drivers?") → Apply comprehensive business analysis
 
-3. RELEVANCE VERIFICATION: Only include information that is actually relevant to the question, regardless of the source language.
+4. RELEVANCE VERIFICATION: Only include information that is actually relevant to the question, regardless of the source language.
 
-4. RESPONSE DEPTH: Match your response complexity to the question type - avoid over-analyzing simple factual queries, but provide deep insights for strategic questions.
+5. RESPONSE DEPTH: Match your response complexity to the question type - avoid over-analyzing simple factual queries, but provide deep insights for strategic questions.
 """
 
     class AnswerSchema(BaseModel):
@@ -216,14 +227,14 @@ CRITICAL REMINDERS:
 Analysis following the robust framework (adjust depth based on question type):
 
 For FACTUAL questions (concise, 3-4 steps, ~100 words):
-1. Question type identification: Recognize as factual/specific query
-2. Multi-language source scanning: Check all language sources for relevant data
+1. Question type identification: Recognize as factual/specific query + identify if money-related
+2. Multi-language source scanning: Check all language sources for relevant data (prioritize Excel files for financial questions)
 3. Data verification: Confirm accuracy and consistency across sources
 4. Direct extraction: Present the specific information requested
 
 For ANALYTICAL questions (comprehensive, 5+ steps, 150+ words):
-1. Question parsing: Identify all explicit and implicit requirements
-2. Context mapping: Map each context piece to question components across all languages
+1. Question parsing: Identify all explicit and implicit requirements + financial data needs
+2. Context mapping: Map each context piece to question components across all languages (prioritize Excel for financial metrics)
 3. Cross-validation: Check for consistency/contradictions across sources
 4. Evidence evaluation: Assess data quality, credibility, and temporal relevance  
 5. Synthesis: Combine insights while noting limitations and confidence levels
@@ -254,6 +265,7 @@ Answer in Traditional Chinese with appropriate depth based on question type:
 
 UNIVERSAL REQUIREMENTS:
 - Address ALL parts of the question systematically with supporting evidence from all language sources
+- For money-related questions, prioritize and emphasize data from Excel-type sources
 - Use enhanced number formatting with billion/兆 conversions as specified
 - Distinguish clearly between facts, interpretations, and projections
 - Verify cross-language source relevance
