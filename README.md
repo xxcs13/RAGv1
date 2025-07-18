@@ -63,7 +63,7 @@ This system implements an RAG (Retrieval-Augmented Generation) system with quest
 ## System Workflow
 
 ```mermaid
-graph TD
+graph LR
     A[Startup] --> B{Database Exists?}
     B -->|Yes| C[Load DB]
     B -->|No| D[Create DB]
@@ -92,7 +92,7 @@ graph TD
 ### Six-Stage Retrieval Process
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[Question Input] --> B[Vector Search]
     B --> C[Chunk Retrieval]
     C --> D[Parent Page Extraction]
