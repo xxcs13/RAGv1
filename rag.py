@@ -13,7 +13,7 @@ import inspect
 
 import pandas as pd
 from pptx import Presentation
-from pypdf import PdfReader  # type: ignore
+from pypdf import PdfReader  
 import pdfplumber
 
 from langchain_community.vectorstores import Chroma
