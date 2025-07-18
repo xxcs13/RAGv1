@@ -2050,10 +2050,10 @@ query_graph = query_workflow.compile()
 # =============================================================================
 
 if __name__ == "__main__":
-    print("Enhanced RAG system with streamlined database management...")
+    print("RAG system with streamlined database management...")
     print("Initializing system...")
     
-    # First, check if existing database is available
+    # First, check if the existing database is available
     print("Checking for existing vector database...")
     vs_manager = VectorStoreManager()
     
@@ -2064,7 +2064,7 @@ if __name__ == "__main__":
             if vectorstore is not None:
                 stats = vs_manager.get_vectorstore_stats(vectorstore)
                 print(f" Found existing vector database: {stats}")
-                docs = []  # Empty since we're using existing database
+                docs = []  # Empty since we're using an existing database
                 parsed_reports = []  # Empty for existing database
                 print(" Ready for questions........\n")
             else:
@@ -2077,7 +2077,7 @@ if __name__ == "__main__":
         print(" No existing vector database found.")
         vectorstore = None
     
-    # If no existing database, get files from user and create new database
+    # If no existing database, get files from user and create a new database
     if vectorstore is None:
         print("\nPlease provide documents for processing:")
         user_files = get_user_files()
