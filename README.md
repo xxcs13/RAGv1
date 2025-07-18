@@ -64,41 +64,27 @@ This system implements an RAG (Retrieval-Augmented Generation) system with quest
 
 ```mermaid
 graph TD
-    A[System Startup] --> B{Check Existing Database}
-    B -->|Found| C[Load Existing Database]
-    B -->|Not Found| D[Request User Files]
+    A[Startup] --> B{Database Exists?}
+    B -->|Yes| C[Load DB]
+    B -->|No| D[Create DB]
     
-    D --> E[Document Parsing]
-    E --> F[Text Chunking]
-    F --> G[Vector Embedding]
-    G --> H[Database Creation]
+    C --> E[Ready]
+    D --> E
     
-    C --> I[Ready for Questions]
-    H --> I
+    E --> F[Question Input]
+    F --> G[Retrieval Pipeline]
+    G --> H{Question Type}
     
-    I --> J[User Question Input]
-    J --> K[Record Start Time]
-    K --> L[Question Classification]
+    H -->|Factual| I[Direct Answer]
+    H -->|Analytical| J[Business Analysis]
     
-    L --> M[Vector Retrieval]
-    M --> N[Parent Page Aggregation]
-    N --> O[LLM Reranking]
-    O --> P[Context Assembly]
+    I --> K[Performance Log]
+    J --> K
+    K --> L[Display Results]
     
-    P --> Q{Question Type}
-    Q -->|Factual| R[Direct Response Generation]
-    Q -->|Analytical| S[Business Analysis Generation]
-    
-    R --> T[Token Counting]
-    S --> T
-    T --> U[Performance Calculation]
-    U --> V[Result Logging]
-    V --> W[Display Results]
-    
-    W --> X{Continue?}
-    X -->|Yes| J
-    X -->|No| Y[Exit System]
-
+    L --> M{Continue?}
+    M -->|Yes| F
+    M -->|No| N[Exit]
 ```
 
 ## Detailed Retrieval Pipeline
@@ -106,36 +92,37 @@ graph TD
 ### Six-Stage Retrieval Process
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Question Input] --> B[Vector Search]
     B --> C[Chunk Retrieval]
     C --> D[Parent Page Extraction]
     D --> E[LLM Reranking]
     E --> F[Context Assembly]
     
-    subgraph "Stage 2-3: Vector Processing"
-        B1[Query Embedding<br/>text-embedding-3-small]
-        B2[ChromaDB Search<br/>Top 30 chunks]
+    subgraph S1 ["Vector Processing"]
+        B1[Query Embedding]
+        B2[ChromaDB Search]
         B1 --> B2
     end
     
-    subgraph "Stage 4: Page Assembly"
-        D1[Extract Page Numbers]
-        D2[Deduplicate Pages]
-        D3[Retrieve Full Pages]
+    subgraph S2 ["Page Assembly"]
+        D1[Extract Pages]
+        D2[Deduplicate]
+        D3[Retrieve Full Content]
         D1 --> D2 --> D3
     end
     
-    subgraph "Stage 5: LLM Scoring"
-        E1[Batch Processing<br/>GPT-4o-mini]
-        E2[Relevance Scoring<br/>0.0 - 1.0]
-        E3[Score Fusion<br/>70% LLM + 30% Vector]
+    subgraph S3 ["LLM Scoring"]
+        E1[Batch Processing]
+        E2[Relevance Scoring]
+        E3[Score Fusion]
         E1 --> E2 --> E3
     end
     
-    B --> B1
-    C --> D1
-    E3 --> F
+    B --> S1
+    C --> S2
+    D --> S3
+    S3 --> F
 ```
 
 ## Question Type Classification
