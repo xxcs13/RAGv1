@@ -121,46 +121,43 @@ flowchart LR
     D --> E[Stage 5: LLM Reranking]
     E --> F[Stage 6: Context Assembly]
 
-    subgraph S1 [Stage 1: Vector Search]
+    B --- S1
+    C --- S23
+    D --- S4
+    E --- S5
+    F --- S6
+
+    subgraph S1 [" "]
         B1[Query Embedding]
-        B2[ChromaDB Similarity Search]
+        B2[Similarity Search]
         B3[Top 30 Chunks Retrieved]
         B1 --> B2 --> B3
     end
 
-    subgraph S23 [Stage 2-3: Chunk Processing]
-        C1[Chunk Metadata Extraction]
-        C2[Score Assignment]
-        C3[Initial Ranking]
-        C1 --> C2 --> C3
+    subgraph S23 [" "]
+        C1[Extract Metadata]
+        C2[Initial Ranking]
+        C1 --> C2
     end
 
-    subgraph S4 [Stage 4: Parent Page Assembly]
-        D1[Extract Page Numbers]
-        D2[Deduplicate Pages]
-        D3[Retrieve Full Page Content]
+    subgraph S4 [" "]
+        D1[Extract Pages]
+        D2[Deduplicate]
+        D3[Retrieve Full Content]
         D1 --> D2 --> D3
     end
 
-    subgraph S5 [Stage 5: LLM Reranking]
-        E1[Batch Processing with GPT-4o-mini]
-        E2[Relevance Scoring]
-        E3[Score Fusion: 70% LLM + 30% Vector]
-        E1 --> E2 --> E3
+    subgraph S5 [" "]
+        E1[LLM Relevance Scoring]
+        E2[Score Fusion: 70% LLM + 30% Vector]
+        E1 --> E2
     end
 
-    subgraph S6 [Stage 6: Context Assembly]
-        F1[Top 10 Pages Selection]
-        F2[Source ID Generation]
-        F3[Final Context Formatting]
-        F1 --> F2 --> F3
+    subgraph S6 [" "]
+        F1[Select Top 10 Pages]
+        F2[Format Context]
+        F1 --> F2
     end
-
-    B -.-> S1
-    C -.-> S23
-    D -.-> S4
-    E -.-> S5
-    F -.-> S6
 ```
 
 ## Question Type Classification
