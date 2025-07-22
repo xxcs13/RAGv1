@@ -1,5 +1,7 @@
 
-# Overview
+# Enhanced RAG System Documentation
+
+## Overview
 
 This system implements an RAG (Retrieval-Augmented Generation) system with question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
 
@@ -27,6 +29,27 @@ This system implements an RAG (Retrieval-Augmented Generation) system with quest
 - Persistent vector storage with `ChromaDB`
 - Intelligent workflow optimization
 
+## Document Source Management
+
+### Document Input Method
+Documents are provided through **manual file path input**:
+- Users manually enter file paths when no existing vector database is found
+- Interactive command-line interface prompts for file paths one by one
+- Users type 'done' when finished adding files
+- The system validates file existence and format compatibility before processing
+
+### Supported File Formats
+- **PDF**: Enhanced text and table extraction
+- **PPTX/PPT**: Comprehensive object extraction (slides, tables, charts, images)
+- **XLS/XLSX**: Structured spreadsheet parsing
+
+### File Input Workflow
+1. System checks for existing vector database
+2. If no database exists, prompts user for file paths
+3. Validates each file path and format
+4. Processes all valid documents into vector database
+5. Database persists for future sessions
+
 ## System Architecture
 
 ### Core Components
@@ -40,7 +63,7 @@ This system implements an RAG (Retrieval-Augmented Generation) system with quest
 **Vector Database Management**
 - **VectorStoreManager**: Persistent `ChromaDB` storage and loading
 - **Automatic Detection**: Smart database existence checking
-- **Embedding Model**: OpenAI `text-embedding-3-small` 
+- **Embedding Model**: OpenAI `text-embedding-3-small` (1536 dimensions)
 
 **Retrieval System**
 - **VectorRetriever**: Semantic similarity search with scoring
@@ -66,25 +89,26 @@ This system implements an RAG (Retrieval-Augmented Generation) system with quest
 graph LR
     A[Startup] --> B{Database Exists?}
     B -->|Yes| C[Load DB]
-    B -->|No| D[Create DB]
+    B -->|No| D[User Input Files]
     
-    C --> E[Ready]
-    D --> E
+    D --> E[Create DB]
+    C --> F[Ready]
+    E --> F
     
-    E --> F[Question Input]
-    F --> G[Retrieval Pipeline]
-    G --> H{Question Type}
+    F --> G[Question Input]
+    G --> H[Retrieval Pipeline]
+    H --> I{Question Type}
     
-    H -->|Factual| I[Direct Answer]
-    H -->|Analytical| J[Business Analysis]
+    I -->|Factual| J[Direct Answer]
+    I -->|Analytical| K[Business Analysis]
     
-    I --> K[Performance Log]
-    J --> K
-    K --> L[Display Results]
+    J --> L[Performance Log]
+    K --> L
+    L --> M[Display Results]
     
-    L --> M{Continue?}
-    M -->|Yes| F
-    M -->|No| N[Exit]
+    M --> N{Continue?}
+    N -->|Yes| G
+    N -->|No| O[Exit]
 ```
 
 ## Detailed Retrieval Pipeline
@@ -92,36 +116,53 @@ graph LR
 ### Six-Stage Retrieval Process
 
 ```mermaid
-flowchart LR
-    A[Question Input] --> B[Vector Search]
-    B --> C[Chunk Retrieval]
-    C --> D[Parent Page Extraction]
-    D --> E[LLM Reranking]
-    E --> F[Context Assembly]
+flowchart TD
+    A[Question Input] --> B[Stage 1: Vector Search]
+    B --> C[Stage 2-3: Chunk Processing]
+    C --> D[Stage 4: Parent Page Assembly]
+    D --> E[Stage 5: LLM Reranking]
+    E --> F[Stage 6: Context Assembly]
 
-    subgraph "Stage 2-3: Vector Processing"
+    subgraph S1 [Stage 1: Vector Search]
         B1[Query Embedding]
-        B2[ChromaDB Search<br/>Top 30 chunks]
-        B1 --> B2
+        B2[ChromaDB Similarity Search]
+        B3[Top 30 Chunks Retrieved]
+        B1 --> B2 --> B3
     end
 
-    subgraph "Stage 4: Page Assembly"
+    subgraph S23 [Stage 2-3: Chunk Processing]
+        C1[Chunk Metadata Extraction]
+        C2[Score Assignment]
+        C3[Initial Ranking]
+        C1 --> C2 --> C3
+    end
+
+    subgraph S4 [Stage 4: Parent Page Assembly]
         D1[Extract Page Numbers]
         D2[Deduplicate Pages]
-        D3[Retrieve Full Pages]
+        D3[Retrieve Full Page Content]
         D1 --> D2 --> D3
     end
 
-    subgraph "Stage 5: LLM Scoring"
-        E1[Batch Processing<br/>GPT-4o-mini]
+    subgraph S5 [Stage 5: LLM Reranking]
+        E1[Batch Processing with GPT-4o-mini]
         E2[Relevance Scoring]
-        E3[Score Fusion<br/>70% LLM + 30% Vector]
+        E3[Score Fusion: 70% LLM + 30% Vector]
         E1 --> E2 --> E3
     end
 
-    B --> B1
-    C --> D1
-    E3 --> F
+    subgraph S6 [Stage 6: Context Assembly]
+        F1[Top 10 Pages Selection]
+        F2[Source ID Generation]
+        F3[Final Context Formatting]
+        F1 --> F2 --> F3
+    end
+
+    B -.-> S1
+    C -.-> S23
+    D -.-> S4
+    E -.-> S5
+    F -.-> S6
 ```
 
 ## Question Type Classification
@@ -140,8 +181,8 @@ flowchart LR
 
 **Example:**
 ```
-Q: "台積電2024年Q3營收是多少？"
-A: "根據台積電2024年第三季財務報告，該季營收為759.69 billion新台幣(7千5百96億9千萬新台幣)。"
+Q: "What is TSMC's Q3 2024 revenue?"
+A: "According to TSMC's Q3 2024 financial report, the quarterly revenue was 759.69 billion TWD."
 ```
 
 ### Analytical/Strategic Queries
@@ -158,8 +199,8 @@ A: "根據台積電2024年第三季財務報告，該季營收為759.69 billion�
 
 **Example:**
 ```
-Q: "說明台積電2025年主要營收成長動力"
-A: "從戰略角度分析，台積電正處於AI革命浪潮的核心位置..."
+Q: "Analyze TSMC's main revenue growth drivers for 2025"
+A: "From a strategic perspective, TSMC is positioned at the core of the AI revolution..."
 [Full business analysis with strategic insights]
 ```
 
@@ -208,7 +249,7 @@ python rag.py
 
 **First Run (No Database):**
 1. System checks for an existing database
-2. Request file input from the user
+2. Prompts user to input file paths manually
 3. Processes documents and creates a database
 4. Ready for questions
 
@@ -218,9 +259,24 @@ python rag.py
 3. Immediately ready for questions
 4. No file input required
 
+### File Input Process
+
+When no database exists, the system will prompt:
+```
+Please enter file paths for processing.
+Supported formats: PDF, PPTX, XLS/XLSX
+Enter file paths one by one. Type 'done' when finished.....
+
+File 1 (or 'done'): /path/to/your/document.pdf
+Added: /path/to/your/document.pdf
+File 2 (or 'done'): /path/to/your/presentation.pptx
+Added: /path/to/your/presentation.pptx
+File 3 (or 'done'): done
+```
+
 ### Supported File Formats
 
-- **PDF**: Text and table extraction 
+- **PDF**: Text and table extraction with OCR fallback
 - **PPTX**: Complete object extraction (text, tables, charts, images)
 - **Excel (.xls/.xlsx)**: Structured data parsing with `pandas`
 
@@ -228,10 +284,10 @@ python rag.py
 
 ```bash
 # Factual Query
-Question: 台積電2024年營收是多少？
+Question: What is TSMC's 2024 revenue?
 
 # Analytical Query  
-Question: 分析台積電在AI市場的競爭優勢和風險
+Question: Analyze TSMC's competitive advantages and risks in AI market
 
 # Multi-language Query
 Question: Compare TSMC's advanced process revenue with competitors
@@ -299,8 +355,8 @@ All queries are logged to `enhanced_rag_qa_log.csv` with:
 The system automatically formats large numbers with Chinese descriptions:
 
 ```
-2,894,307,699(28億9千4百30萬7千6百99)
-289.43 billion → 2,894,300,000,000(2兆8千9百43億)
+2,894,307,699(28 billion 943 million 76 thousand 99)
+289.43 billion → 2,894,300,000,000(2.89 trillion)
 ```
 
 ## Advanced Features
