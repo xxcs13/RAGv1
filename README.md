@@ -1,7 +1,5 @@
 
-# Enhanced RAG System Documentation
-
-## Overview
+# Overview
 
 This system implements an RAG (Retrieval-Augmented Generation) system with question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
 
@@ -116,7 +114,7 @@ graph LR
 ### Six-Stage Retrieval Process
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[Question Input] --> B[Stage 1: Vector Search]
     B --> C[Stage 2-3: Chunk Processing]
     C --> D[Stage 4: Parent Page Assembly]
