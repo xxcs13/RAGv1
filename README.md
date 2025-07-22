@@ -220,7 +220,7 @@ python rag.py
 
 ### Supported File Formats
 
-- **PDF**: Text and table extraction with OCR fallback
+- **PDF**: Text and table extraction 
 - **PPTX**: Complete object extraction (text, tables, charts, images)
 - **Excel (.xls/.xlsx)**: Structured data parsing with `pandas`
 
