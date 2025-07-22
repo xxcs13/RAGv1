@@ -62,7 +62,7 @@ def build_system_prompt(instruction: str="", example: str="", pydantic_schema: s
     system_prompt = instruction.strip() + schema + example
     return system_prompt
 
-class EnhancedRAGAnswerPrompt:
+class RAGAnswerPrompt:
     """Structured prompt system for RAG answer generation"""
     instruction = """
 You are an advanced RAG (Retrieval-Augmented Generation) answering system that responds in Traditional Chinese.
@@ -103,95 +103,6 @@ CORE ANSWERING PRINCIPLES:
 6. TRANSPARENCY: Clearly distinguish between what is explicitly stated vs. what is inferred
 7. LIMITATION AWARENESS: Acknowledge when information is incomplete, conflicting, or missing
 
-ROBUST ANALYSIS FRAMEWORK:
-- Parse the question's explicit requirements and implicit expectations
-- Identify key entities, time periods, metrics, and relationships mentioned
-- Map each piece of context to specific parts of the question
-- Note any contradictions or gaps between sources
-- Distinguish between factual data, interpretations, and projections
-- Consider temporal context (when data was collected vs. when question asks about)
-- Evaluate data quality and source credibility indicators
-- Account for potential biases in source materials
-
-ANSWER QUALITY STANDARDS:
-- Provide direct answers to all parts of multi-part questions
-- Support claims with specific evidence from the context (regardless of source language)
-- Use precise language that reflects the confidence level of available data
-- ADAPT RESPONSE DEPTH based on question type:
-  * Factual queries: Concise, direct answers with minimal elaboration
-  * Analytical queries: Comprehensive insights with business context
-- Maintain logical flow and clear reasoning chains
-- Address potential counterarguments or alternative interpretations when relevant to question type
-- Always respond in Traditional Chinese for the final answer
-- CROSS-LANGUAGE VERIFICATION: Ensure relevance across all language sources
-
-BUSINESS INTELLIGENCE & ANALYTICAL DEPTH (For Analytical/Strategic Questions ONLY):
-- Apply strategic business thinking to interpret data beyond surface-level facts
-- Identify underlying business drivers, competitive dynamics, and market forces
-- Assess potential risks, opportunities, and strategic implications
-- Connect dots between different business metrics and their interdependencies
-- Evaluate timing considerations and market context that could affect outcomes
-- Consider stakeholder perspectives (investors, customers, competitors, suppliers)
-- Provide forward-looking insights based on historical patterns and current trends
-- Identify potential catalysts or headwinds that could accelerate/decelerate trends
-- Assess the sustainability and scalability of business developments
-- Consider broader industry dynamics and macroeconomic factors when relevant
-
-NOTE: For factual/specific queries, focus on data extraction and presentation rather than deep business analysis.
-
-ANALYTICAL SOPHISTICATION (Adjust based on question type):
-
-For FACTUAL queries:
-- Focus on precise data extraction and clear presentation
-- Verify accuracy across multiple language sources
-- Present numbers in standardized format
-
-For ANALYTICAL queries:
-- Move beyond "what" to explore "why" and "so what"
-- Identify cause-and-effect relationships and feedback loops
-- Recognize leading vs. lagging indicators
-- Assess the quality and sustainability of business performance
-- Consider cyclical vs. structural factors
-- Evaluate competitive positioning and moat strength
-- Analyze resource allocation efficiency and strategic priorities
-- Consider regulatory, technological, and market disruption potential
-
-HANDLING EDGE CASES:
-- If information is insufficient: State exactly what is missing and why
-- If sources contradict: Present both perspectives and note the discrepancy
-- If question asks about future trends: Clearly distinguish between historical data and projections
-- If context is tangentially related: Explain the connection and acknowledge limitations
-- If multiple interpretations exist: Present the most supported interpretation while noting alternatives
-
-ENHANCED NUMBER FORMATTING RULES:
-When presenting numbers, especially large figures, use this comprehensive format:
-
-FOR NUMBERS IN BILLIONS:
-- English: "289.43 billion" → Chinese: "2,894,300,000,000(2兆8千9百43億)" 
-- Always include "billion" in English context and "兆" for Chinese context when appropriate
-- For values ≥ 1 billion: Use both billion notation and 兆/億 conversion
-
-FOR STANDARD LARGE NUMBERS:
-- Format: "2,894,307,699(28億9千4百30萬7千6百99)"
-- Always include both comma-separated number and Chinese numerical description in parentheses
-
-SCALE CONVERSIONS:
-- Thousands: "千" (1,000 = 1千)
-- Ten thousands: "萬" (10,000 = 1萬)
-- Millions: "百萬" (1,000,000 = 100萬)
-- Ten millions: "千萬" (10,000,000 = 1千萬)
-- Hundred millions: "億" (100,000,000 = 1億)
-- Billions: "十億" (1,000,000,000 = 10億)
-- Ten billions: "百億" (10,000,000,000 = 100億)
-- Hundred billions: "千億" (100,000,000,000 = 1千億)
-- Trillions: "兆" (1,000,000,000,000 = 1兆)
-
-SPECIAL CASES:
-- Percentages: Include both decimal and whole number forms when relevant
-- Growth rates: Specify time periods and base comparisons
-- Financial metrics: Include currency and reporting period context
-- Technical specifications: Maintain precision appropriate to the field
-
 Apply this enhanced formatting to ALL significant numbers in your final answer, including revenue, profit, market share, quantities, technical specifications, dates, and statistical measures.
 """
 
@@ -223,79 +134,11 @@ CRITICAL REMINDERS:
 """
 
     class AnswerSchema(BaseModel):
-        step_by_step_analysis: str = Field(description="""
-Analysis following the robust framework (adjust depth based on question type):
-
-For FACTUAL questions (concise, 3-4 steps, ~100 words):
-1. Question type identification: Recognize as factual/specific query + identify if money-related
-2. Multi-language source scanning: Check all language sources for relevant data (prioritize Excel files for financial questions)
-3. Data verification: Confirm accuracy and consistency across sources
-4. Direct extraction: Present the specific information requested
-
-For ANALYTICAL questions (comprehensive, 5+ steps, 150+ words):
-1. Question parsing: Identify all explicit and implicit requirements + financial data needs
-2. Context mapping: Map each context piece to question components across all languages (prioritize Excel for financial metrics)
-3. Cross-validation: Check for consistency/contradictions across sources
-4. Evidence evaluation: Assess data quality, credibility, and temporal relevance  
-5. Synthesis: Combine insights while noting limitations and confidence levels
-
-Pay special attention to cross-language relevance verification and question type appropriateness.
-""")
-
-        reasoning_summary: str = Field(description="Concise synthesis summary highlighting key evidence, confidence level rationale, and any significant limitations (50-80 words).")
-
-        relevant_sources: List[str] = Field(description="""
-Source IDs containing information DIRECTLY used in the answer. Apply strict criteria:
-- Include ONLY sources with explicit data/statements that directly answer the question
-- Sources providing key supporting evidence or critical context
-- Exclude tangentially related or weak-connection sources
-- Use exact source IDs as shown in context (format: filetype_filename_page_X)
-- Quality over quantity: prefer fewer highly relevant sources
-""")
-
-        confidence_level: Literal["high", "medium", "low"] = Field(description="""
-Confidence assessment based on:
-- HIGH: Multiple consistent sources, complete data, direct answers to all question parts
-- MEDIUM: Adequate sources with minor gaps, mostly direct answers, some interpretation needed
-- LOW: Limited sources, significant gaps, indirect answers, or conflicting information
-""")
-
-        final_answer: str = Field(description="""
-Answer in Traditional Chinese with appropriate depth based on question type:
-
-UNIVERSAL REQUIREMENTS:
-- Address ALL parts of the question systematically with supporting evidence from all language sources
-- For money-related questions, prioritize and emphasize data from Excel-type sources
-- Use enhanced number formatting with billion/兆 conversions as specified
-- Distinguish clearly between facts, interpretations, and projections
-- Verify cross-language source relevance
-
-FOR FACTUAL/SPECIFIC QUESTIONS (concise, direct approach):
-- Provide direct, precise answers with minimal elaboration
-- Focus on exact data extraction and clear presentation
-- Include specific figures, dates, quantities as requested
-- Cite relevant sources briefly
-- Avoid unnecessary business analysis unless directly relevant
-
-FOR ANALYTICAL/STRATEGIC QUESTIONS (comprehensive insights):
-- Go beyond surface facts to explain underlying business dynamics and drivers
-- Identify strategic implications, competitive advantages, and market positioning
-- Assess sustainability of trends and potential risk factors
-- Connect financial metrics to operational performance and market context
-- Evaluate timing considerations and market cycle positioning
-- Consider stakeholder impact (investors, customers, industry ecosystem)
-- Explain "why" behind the numbers and "so what" for stakeholders
-- Identify cause-and-effect relationships and interdependencies
-- Assess quality of growth/performance (organic vs. inorganic, sustainable vs. cyclical)
-- Evaluate competitive moats and differentiation factors
-
-PROFESSIONAL PRESENTATION:
-- Maintain analytical rigor while avoiding mechanical, formulaic responses
-- Use natural, engaging language appropriate to question complexity
-- Structure insights logically from facts → analysis → implications (for analytical questions)
-- Acknowledge limitations and uncertainties transparently
-- Provide balanced perspective considering multiple viewpoints when appropriate
-""")
+        step_by_step_analysis: str = Field(description="Analysis following the robust framework")
+        reasoning_summary: str = Field(description="Concise synthesis summary highlighting key evidence")
+        relevant_sources: List[str] = Field(description="Source IDs containing information directly used in the answer")
+        confidence_level: Literal["high", "medium", "low"] = Field(description="Confidence assessment")
+        final_answer: str = Field(description="Answer in Traditional Chinese with appropriate depth")
 
     pydantic_schema = re.sub(r"^ {4}", "", inspect.getsource(AnswerSchema), flags=re.MULTILINE)
 
@@ -303,36 +146,697 @@ PROFESSIONAL PRESENTATION:
 Examples:
 
 FACTUAL QUESTION Example:
-Question: "台積電 2024 年第三季的營收是多少？"
+Question: "What is TSMC's Q3 2024 revenue?"
 
 Answer:
 ```
 {
-  "step_by_step_analysis": "1. 問題類型識別：這是一個事實性查詢，需要直接提取特定的財務數據。\n2. 多語言源掃描：檢查所有語言的文件中關於台積電 2024 Q3 營收的資訊。\n3. 數據驗證：確認不同來源中的數據一致性和準確性。\n4. 直接提取：從財務報告中提取準確的營收數字。",
-  "reasoning_summary": "直接從官方財務報告提取 2024 年第三季營收數據，數據來源可靠。",
+  "step_by_step_analysis": "Direct financial data extraction from Q3 2024 earnings report.",
+  "reasoning_summary": "Official financial report provides reliable revenue data.",
   "relevant_sources": ["pdf_tsmc_2024_q3_earnings_pdf_page_2"],
   "confidence_level": "high",
-  "final_answer": "根據台積電 2024 年第三季財務報告，該季營收為 759.69 billion 新台幣(7千5百96億9千萬新台幣)。"
-}
-```
-
-ANALYTICAL QUESTION Example:
-Question: "結合台積電 69% 先進製程營收占比及 DIGITIMES AI 伺服器需求預估，說明台積電 2025 年主要營收成長動力。"
-
-Answer:
-```
-{
-  "step_by_step_analysis": "1. 戰略情境分析：台積電面臨 AI 運算需求爆發的歷史性機遇，69% 先進製程營收占比顯示公司已成功轉型為技術密集型業務模式，與傳統代工業者形成差異化。\n2. 競爭動態解讀：先進製程技術門檻的指數級提升創造了寡頭壟斷格局，台積電在 3nm/5nm 領域的領先地位構築了高難度複製的護城河，客戶別無選擇只能依賴其產能。\n3. 需求結構分析：AI 伺服器市場的雙位數成長不同於過往週期性需求，其背後是數位轉型和 AI 應用的結構性趨勢，需求具有剛性特徵且不易替代。\n4. 商業模式演進：從單純代工轉向「製程+封裝」完整解決方案，CoWoS 技術不僅提升附加價值，更加深客戶依賴度，形成生態系統鎖定效應。\n5. 風險機會評估：雖然 AI 浪潮提供成長動能，但需留意客戶集中風險、地緣政治衝擊，以及新興技術可能帶來的顛覆性挑戰。成功關鍵在於維持技術領先與多元化平衡。",
-  "reasoning_summary": "台積電憑藉技術護城河與 AI 結構性需求的戰略契合，正經歷從週期性代工向高附加價值平台的商業模式升級，成長動力具備可持續性但需注意風險平衡。",
-  "relevant_sources": ["pdf_tsmc_2024_yearly_report_pdf_page_8", "0.pptx_slide_4"],
-  "confidence_level": "medium",
-  "final_answer": "從戰略角度分析，台積電正處於 AI 革命浪潮的核心位置，其 2025 年營收成長將體現三重競爭優勢的協同效應：\n\n技術護城河深化：69% 先進製程營收占比(約 690 billion 新台幣/6千9百億新台幣)不僅反映當前領導地位，更重要的是展現了技術密集型商業模式的獲利能力。3nm/5nm 製程的技術門檻極高，競爭對手追趕困難，形成結構性競爭優勢。\n\n市場需求結構性轉變：AI 伺服器雙位數成長背後反映的是運算架構的根本性變革。與過往週期性需求不同，AI 驅動的需求具有持續性和剛性特徵，為台積電提供了更可預期的營收基礎，降低了傳統半導體週期性波動的風險。\n\n生態系統主導權：CoWoS® 先進封裝技術形成了「製程+封裝」的完整解決方案，這種垂直整合能力讓台積電不僅是代工廠，更成為 AI 晶片生態的關鍵使能者。客戶轉換成本高，黏著度強。\n\n戰略意涵：台積電正從週期性代工業務轉向結構性成長模式，AI 浪潮為其創造了罕見的「量價齊升」機會。然而需關注地緣政治風險和客戶集中度問題，多元化策略將是長期競爭力的關鍵。"
+  "final_answer": "According to TSMC's Q3 2024 financial report, quarterly revenue was 759.69 billion TWD."
 }
 ```
 """
 
     system_prompt = build_system_prompt(instruction, example)
     system_prompt_with_schema = build_system_prompt(instruction, example, pydantic_schema)
+
+class CrossPageTextSplitter:
+    """
+    Enhanced document chunking with cross-page support.
+    
+    This splitter can create chunks that span across page boundaries,
+    solving the issue where related content is artificially separated
+    by page breaks. Maintains fixed chunk_size=300 and chunk_overlap=50.
+    """
+    
+    def __init__(self, chunk_size: int = 300, chunk_overlap: int = 50):
+        """
+        Initialize cross-page text splitter with fixed parameters.
+        
+        Args:
+            chunk_size: Maximum tokens per chunk (fixed at 300)
+            chunk_overlap: Token overlap between chunks (fixed at 50)
+        """
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+            model_name="gpt-4o-mini",
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+    
+    def split_document(self, document_data: Dict) -> List[Document]:
+        """
+        Split document into chunks with cross-page support.
+        
+        Different document types receive format-specific handling:
+        - PDF: Cross-page continuous text splitting
+        - Excel: Preserve table structure within sheets
+        - PPTX: Maintain slide-level organization
+        
+        Args:
+            document_data: Parsed document data with pages
+            
+        Returns:
+            List of Document objects with appropriate metadata
+        """
+        doc_type = document_data['metainfo']['document_type']
+        
+        if doc_type == 'excel':
+            return self._split_excel_document(document_data)
+        elif doc_type == 'pptx':
+            return self._split_pptx_document(document_data)
+        else:
+            # Use cross-page splitting for PDF and other text-based formats
+            return self._split_cross_page_document(document_data)
+    
+    def _split_cross_page_document(self, document_data: Dict) -> List[Document]:
+        """
+        Split document content across page boundaries for better semantic continuity.
+        
+        Process:
+        1. Combine all pages into continuous text with page markers
+        2. Apply text splitting across the entire document
+        3. Determine page coverage for each resulting chunk
+        4. Create metadata reflecting page ranges
+        
+        Args:
+            document_data: Document data with pages
+            
+        Returns:
+            List of documents with cross-page chunks
+        """
+        pages = document_data['content']['pages']
+        if not pages:
+            return []
+        
+        # Combine all pages into continuous text with markers
+        combined_text, page_boundaries = self._combine_pages_with_markers(pages)
+        
+        if not combined_text.strip():
+            return []
+        
+        # Split the combined text into chunks
+        text_chunks = self.text_splitter.split_text(combined_text)
+        
+        # Create documents with page range metadata
+        documents = []
+        for i, chunk in enumerate(text_chunks):
+            if not chunk.strip():
+                continue
+                
+            # Remove page markers from chunk content
+            clean_chunk = self._remove_page_markers(chunk)
+            
+            # Determine which pages this chunk spans
+            chunk_start = combined_text.find(chunk)
+            chunk_end = chunk_start + len(chunk)
+            
+            page_range = self._get_page_range(chunk_start, chunk_end, page_boundaries)
+            
+            # Create metadata for the chunk
+            metadata = {
+                "chunk": i + 1,
+                "total_chunks": len(text_chunks),
+                "content_type": "cross_page_text"
+            }
+            
+            # Handle single vs multi-page chunks
+            if len(page_range) == 1:
+                metadata["page"] = page_range[0]
+            else:
+                metadata["page"] = page_range[0]  # Primary page for compatibility
+                metadata["page_range"] = ",".join(map(str, page_range))  # Convert list to string for ChromaDB
+                metadata["spans_pages"] = True
+            
+            doc = Document(
+                page_content=clean_chunk.strip(),
+                metadata=metadata
+            )
+            documents.append(doc)
+        
+        return documents
+    
+    def _combine_pages_with_markers(self, pages: List[Dict]) -> Tuple[str, List[Tuple[int, int, int]]]:
+        """
+        Combine pages into continuous text with boundary markers.
+        
+        Args:
+            pages: List of page dictionaries with 'page' and 'text' keys
+            
+        Returns:
+            Tuple of (combined_text, page_boundaries)
+            page_boundaries: List of (page_num, start_pos, end_pos) tuples
+        """
+        combined_parts = []
+        page_boundaries = []
+        current_pos = 0
+        
+        for page_data in pages:
+            page_num = page_data['page']
+            page_text = page_data.get('text', '').strip()
+            
+            if not page_text:
+                continue
+            
+            # Add subtle page marker that can be removed later
+            page_marker = f"\n--- PAGE {page_num} ---\n"
+            page_content = page_marker + page_text + "\n"
+            
+            start_pos = current_pos
+            end_pos = current_pos + len(page_content)
+            
+            page_boundaries.append((page_num, start_pos, end_pos))
+            combined_parts.append(page_content)
+            current_pos = end_pos
+        
+        return ''.join(combined_parts), page_boundaries
+    
+    def _remove_page_markers(self, text: str) -> str:
+        """Remove page markers from chunk text."""
+        # Remove page markers while preserving content
+        return re.sub(r'\n--- PAGE \d+ ---\n', '\n', text)
+    
+    def _get_page_range(self, chunk_start: int, chunk_end: int, page_boundaries: List[Tuple[int, int, int]]) -> List[int]:
+        """
+        Determine which pages a chunk spans based on position.
+        
+        Args:
+            chunk_start: Start position in combined text
+            chunk_end: End position in combined text
+            page_boundaries: List of (page_num, start_pos, end_pos) tuples
+            
+        Returns:
+            List of page numbers that the chunk covers
+        """
+        covered_pages = []
+        
+        for page_num, start_pos, end_pos in page_boundaries:
+            # Check if chunk overlaps with this page
+            if chunk_start < end_pos and chunk_end > start_pos:
+                covered_pages.append(page_num)
+        
+        return sorted(covered_pages) if covered_pages else [1]  # Fallback to page 1
+    
+    def _split_excel_document(self, document_data: Dict) -> List[Document]:
+        """Excel-specific chunking: preserve table structure and relationships"""
+        chunks = []
+        
+        for page in document_data['content']['pages']:
+            page_text = page.get('text', '')
+            if not page_text.strip():
+                continue
+            
+            # Parse sheet content
+            sheet_chunks = self._split_excel_sheet(page_text, page['page'])
+            chunks.extend(sheet_chunks)
+        
+        return chunks
+    
+    def _split_excel_sheet(self, sheet_text: str, page_num: int) -> List[Document]:
+        """Split Excel sheet while preserving table structure"""
+        documents = []
+        lines = sheet_text.split('\n')
+        
+        if not lines:
+            return documents
+        
+        # Extract sheet name and headers
+        sheet_info = []
+        data_rows = []
+        headers = ""
+        
+        for i, line in enumerate(lines):
+            if line.startswith('Sheet:'):
+                sheet_info.append(line)
+            elif line.startswith('Headers:'):
+                headers = line
+                sheet_info.append(line)
+            elif line.startswith('Row'):
+                data_rows.append(line)
+        
+        # Create chunks with preserved context
+        context_header = '\n'.join(sheet_info)
+        
+        # Group rows into meaningful chunks (preserve relationships)
+        row_groups = []
+        current_group = []
+        current_size = len(context_header)
+        
+        for row in data_rows:
+            row_size = len(row)
+            if current_size + row_size > self.chunk_size and current_group:
+                row_groups.append(current_group.copy())
+                current_group = [row]
+                current_size = len(context_header) + row_size
+            else:
+                current_group.append(row)
+                current_size += row_size
+        
+        if current_group:
+            row_groups.append(current_group)
+        
+        # Create documents with full context
+        for i, group in enumerate(row_groups):
+            chunk_content = context_header + '\n\n' + '\n'.join(group)
+            
+            doc = Document(
+                page_content=chunk_content.strip(),
+                metadata={
+                    "page": page_num,
+                    "chunk": i + 1,
+                    "total_chunks": len(row_groups),
+                    "content_type": "excel_table",
+                    "has_headers": bool(headers)
+                }
+            )
+            documents.append(doc)
+        
+        return documents
+    
+    def _split_pptx_document(self, document_data: Dict) -> List[Document]:
+        """PPTX-specific chunking: preserve slide structure and object relationships"""
+        chunks = []
+        
+        for page in document_data['content']['pages']:
+            page_text = page.get('text', '')
+            if not page_text.strip():
+                continue
+            
+            slide_chunks = self._split_pptx_slide(page_text, page['page'])
+            chunks.extend(slide_chunks)
+        
+        return chunks
+    
+    def _split_pptx_slide(self, slide_text: str, page_num: int) -> List[Document]:
+        """Split PPTX slide while preserving object relationships"""
+        documents = []
+        
+        # Parse slide content by object types
+        content_blocks = self._parse_pptx_content_blocks(slide_text)
+        
+        if not content_blocks:
+            return documents
+        
+        # Group related content blocks
+        grouped_blocks = self._group_pptx_content(content_blocks)
+        
+        # Create chunks from grouped content
+        for i, group in enumerate(grouped_blocks):
+            chunk_content = '\n\n'.join(group['content'])
+            
+            if chunk_content.strip():
+                doc = Document(
+                    page_content=chunk_content.strip(),
+                    metadata={
+                        "page": page_num,
+                        "chunk": i + 1,
+                        "total_chunks": len(grouped_blocks),
+                        "content_type": "pptx_slide",
+                        "object_types": ",".join(group['types']) if group['types'] else ""
+                    }
+                )
+                documents.append(doc)
+        
+        return documents
+    
+    def _parse_pptx_content_blocks(self, slide_text: str) -> List[Dict]:
+        """Parse PPTX slide into content blocks by type"""
+        blocks = []
+        lines = slide_text.split('\n\n')
+        
+        for line_group in lines:
+            if not line_group.strip():
+                continue
+            
+            # Identify content type
+            content_type = 'text'
+            if line_group.startswith('Table:'):
+                content_type = 'table'
+            elif line_group.startswith('Chart:'):
+                content_type = 'chart'
+            elif line_group.startswith('Image:'):
+                content_type = 'image'
+            elif line_group.startswith('Text Frame:'):
+                content_type = 'text_frame'
+            elif line_group.startswith('Group:'):
+                content_type = 'group'
+            
+            blocks.append({
+                'content': line_group.strip(),
+                'type': content_type,
+                'size': len(line_group)
+            })
+        
+        return blocks
+    
+    def _group_pptx_content(self, content_blocks: List[Dict]) -> List[Dict]:
+        """Group PPTX content blocks intelligently"""
+        groups = []
+        current_group = {'content': [], 'types': set(), 'size': 0}
+        
+        for block in content_blocks:
+            # Keep tables and charts as separate chunks for better retrieval
+            if block['type'] in ['table', 'chart'] and current_group['content']:
+                groups.append({
+                    'content': current_group['content'].copy(),
+                    'types': list(current_group['types'])
+                })
+                current_group = {'content': [], 'types': set(), 'size': 0}
+            
+            # Add block to current group
+            current_group['content'].append(block['content'])
+            current_group['types'].add(block['type'])
+            current_group['size'] += block['size']
+            
+            # If it's a table or chart, create separate chunk
+            if block['type'] in ['table', 'chart']:
+                groups.append({
+                    'content': current_group['content'].copy(),
+                    'types': list(current_group['types'])
+                })
+                current_group = {'content': [], 'types': set(), 'size': 0}
+            # If group is getting too large, split it
+            elif current_group['size'] > self.chunk_size:
+                groups.append({
+                    'content': current_group['content'].copy(),
+                    'types': list(current_group['types'])
+                })
+                current_group = {'content': [], 'types': set(), 'size': 0}
+        
+        # Add remaining content
+        if current_group['content']:
+            groups.append({
+                'content': current_group['content'],
+                'types': list(current_group['types'])
+            })
+        
+        return groups
+
+class EnhancedParentPageAggregator:
+    """
+    Enhanced parent page retrieval with support for cross-page chunks.
+    
+    Handles both traditional single-page chunks and new cross-page chunks
+    that span multiple pages. Maintains compatibility with existing
+    parent page assembly functionality.
+    """
+    
+    def __init__(self, parsed_reports: List[Dict]):
+        """
+        Initialize with parsed document reports.
+        
+        Args:
+            parsed_reports: List of document parsing reports
+        """
+        self.parsed_reports = parsed_reports
+        self.page_content_map = self._build_page_content_map()
+    
+    def _build_page_content_map(self) -> Dict[int, str]:
+        """Build mapping from page numbers to full page content"""
+        page_map = {}
+        for report in self.parsed_reports:
+            for page_data in report['report']['content']['pages']:
+                page_num = page_data['page']
+                page_map[page_num] = page_data['text']
+        return page_map
+    
+    def aggregate_to_parent_pages(self, chunk_results: List[Dict]) -> List[Dict]:
+        """
+        Extract parent pages from chunks with cross-page support.
+        
+        For single-page chunks: Returns the full page content
+        For cross-page chunks: Returns combined content from all covered pages
+        
+        Args:
+            chunk_results: List of chunk retrieval results
+            
+        Returns:
+            List of parent page results with deduplicated content
+        """
+        seen_page_combinations = set()
+        parent_results = []
+        
+        for chunk_result in chunk_results:
+            # Determine page coverage for this chunk
+            page_coverage = self._get_chunk_page_coverage(chunk_result)
+            
+            # Create a unique identifier for this page combination
+            page_combination_key = tuple(sorted(page_coverage))
+            
+            if page_combination_key not in seen_page_combinations:
+                seen_page_combinations.add(page_combination_key)
+                
+                # Get combined content for all pages covered by this chunk
+                combined_content = self._get_combined_page_content(page_coverage)
+                
+                parent_result = {
+                    'text': combined_content,
+                    'page': page_coverage[0],  # Primary page for compatibility
+                    'page_range': ",".join(map(str, page_coverage)) if len(page_coverage) > 1 else None,
+                    'spans_pages': len(page_coverage) > 1,
+                    'distance': chunk_result['distance'],
+                    'source_file': chunk_result['source_file'],
+                    'document_type': chunk_result['document_type'],
+                    'metadata': chunk_result['metadata']
+                }
+                parent_results.append(parent_result)
+        
+        return parent_results
+    
+    def _get_chunk_page_coverage(self, chunk_result: Dict) -> List[int]:
+        """
+        Determine which pages a chunk covers.
+        
+        Args:
+            chunk_result: Chunk retrieval result with metadata
+            
+        Returns:
+            List of page numbers covered by the chunk
+        """
+        metadata = chunk_result.get('metadata', {})
+        
+        # Check if chunk spans multiple pages
+        if metadata.get('spans_pages', False) and 'page_range' in metadata:
+            # Convert page_range from string back to list of integers
+            page_range_str = metadata['page_range']
+            return [int(page) for page in page_range_str.split(',')]
+        else:
+            # Single page chunk
+            return [chunk_result['page']]
+    
+    def _get_combined_page_content(self, page_numbers: List[int]) -> str:
+        """
+        Combine content from multiple pages.
+        
+        Args:
+            page_numbers: List of page numbers to combine
+            
+        Returns:
+            Combined page content with clear page boundaries
+        """
+        if len(page_numbers) == 1:
+            # Single page case
+            return self.page_content_map.get(page_numbers[0], '')
+        
+        # Multi-page case: combine with clear separators
+        combined_parts = []
+        for page_num in sorted(page_numbers):
+            page_content = self.page_content_map.get(page_num, '')
+            if page_content.strip():
+                combined_parts.append(f"[Page {page_num}]\n{page_content}")
+        
+        return '\n\n--- PAGE BREAK ---\n\n'.join(combined_parts)
+
+# Create aliases for backward compatibility with existing code
+TextSplitter = CrossPageTextSplitter
+ParentPageAggregator = EnhancedParentPageAggregator
+
+# =============================================================================
+# INGESTION SYSTEM
+# =============================================================================
+
+@dataclass
+class GraphState:
+    """State management for the RAG workflow graph"""
+    docs: Sequence[Union[str, Document]] = field(default_factory=list)
+    vectorstore: Any = None
+    question: str = ""
+    retrieved_docs: List[Document] = field(default_factory=list)
+    answer: str = ""
+    
+    # Enhanced state fields
+    parsed_reports: List[Dict] = field(default_factory=list)
+    vector_results: List[Dict] = field(default_factory=list)
+    reranked_results: List[Dict] = field(default_factory=list)
+    final_context: str = ""
+    structured_answer: Dict = field(default_factory=dict)
+    skip_parsing: bool = False
+    
+    # Performance tracking fields
+    start_time: float = 0.0
+    end_time: float = 0.0
+    retrieval_time: float = 0.0
+    generation_time: float = 0.0
+    total_time: float = 0.0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    throughput_tokens_per_second: float = 0.0
+
+def ingest_node(state: GraphState) -> GraphState:
+    """Parse and ingest documents using unified parsing system"""
+    print("Starting document ingestion...")
+    
+    parsed_reports = []
+    parser = UnifiedDocumentParser()
+    text_splitter = CrossPageTextSplitter()  # Use cross-page splitter directly
+    
+    if state.docs and isinstance(state.docs[0], str):
+        successful_count = 0
+        failed_count = 0
+        
+        for file_path in state.docs:
+            if os.path.exists(str(file_path)):
+                try:
+                    report = parser.parse_document(str(file_path))
+                    
+                    if report['metainfo']['document_type'] == 'failed':
+                        print(f"Skipping failed document: {file_path}")
+                        failed_count += 1
+                        continue
+                    
+                    chunks = text_splitter.split_document(report)
+                    
+                    # Add metadata to chunks
+                    for chunk in chunks:
+                        chunk.metadata.update({
+                            "source_file": os.path.basename(str(file_path)),
+                            "document_type": report['metainfo'].get('document_type', 'unknown'),
+                            "sha1_name": report['metainfo'].get('sha1_name', '')
+                        })
+                    
+                    parsed_reports.append({
+                        'file_path': file_path,
+                        'report': report,
+                        'chunks': chunks
+                    })
+                    
+                    successful_count += 1
+                    print(f"Successfully parsed: {file_path} ({len(chunks)} chunks)")
+                    
+                except Exception as e:
+                    print(f"Failed to parse {file_path}: {e}")
+                    failed_count += 1
+            else:
+                print(f"Warning: File not found: {file_path}")
+                failed_count += 1
+        
+        print(f"Parsing summary: {successful_count} successful, {failed_count} failed")
+        
+        if successful_count == 0:
+            print("Error: No documents were successfully parsed. Check file formats and paths.")
+            raise RuntimeError("Document parsing failed for all files")
+    
+    # Flatten all chunks
+    all_chunks = []
+    for parsed_report in parsed_reports:
+        all_chunks.extend(parsed_report['chunks'])
+    
+    print(f"Ingested {len(parsed_reports)} documents with {len(all_chunks)} chunks")
+    
+    return GraphState(
+        docs=all_chunks,
+        vectorstore=state.vectorstore,
+        question=state.question,
+        parsed_reports=parsed_reports
+    )
+
+def embed_node(state: GraphState) -> GraphState:
+    """Create vector embeddings for document chunks"""
+    print("Creating vector embeddings...")
+    
+    if state.vectorstore is None and state.docs:
+        vs_manager = VectorStoreManager()
+        document_list = [doc for doc in state.docs if isinstance(doc, Document)]
+        
+        if document_list:
+            vectorstore = vs_manager.create_vectorstore(document_list)
+            print(f"Created vector store with {len(document_list)} documents")
+        else:
+            vectorstore = None
+    else:
+        vectorstore = state.vectorstore
+    
+    return GraphState(
+        docs=state.docs,
+        vectorstore=vectorstore,
+        question=state.question,
+        parsed_reports=state.parsed_reports
+    )
+
+# =============================================================================
+# PERFORMANCE TRACKING UTILITIES
+# =============================================================================
+
+def count_tokens(text: str, model: str = "gpt-4o-mini") -> int:
+    """
+    Count tokens in text using OpenAI's official tiktoken library.
+    This is the exact same method used by OpenAI for billing and API limits.
+    """
+    try:
+        # Use model-specific encoding (most accurate)
+        encoding = tiktoken.encoding_for_model(model)
+        return len(encoding.encode(text))
+    except KeyError:
+        # If model not found, use the encoding that gpt-4o-mini uses
+        try:
+            encoding = tiktoken.get_encoding("o200k_base")  # GPT-4o encoding
+            return len(encoding.encode(text))
+        except Exception:
+            # Last resort: use cl100k_base (GPT-4/ChatGPT encoding)
+            encoding = tiktoken.get_encoding("cl100k_base")
+            return len(encoding.encode(text))
+
+def calculate_throughput(tokens: int, time_seconds: float) -> float:
+    """Calculate tokens per second throughput"""
+    if time_seconds <= 0:
+        return 0.0
+    return round(tokens / time_seconds, 2)
+
+# =============================================================================
+# FILE INPUT SYSTEM
+# =============================================================================
+
+def get_user_files() -> List[str]:
+    """Get file paths from user input"""
+    print("Please enter file paths for processing.")
+    print("Supported formats: PDF , PPTX , XLS/XLSX ")
+    print("Enter file paths one by one. Type 'done' when finished.....")
+    
+    files = []
+    while True:
+        file_path = input(f"File {len(files) + 1} (or 'done'): ").strip()
+        
+        if file_path.lower() == 'done':
+            break
+        
+        if not file_path:
+            continue
+        
+        if os.path.exists(file_path):
+            file_ext = Path(file_path).suffix.lower()
+            if file_ext in ['.pdf', '.pptx', '.ppt', '.xls', '.xlsx']:
+                files.append(file_path)
+                print(f"Added: {file_path}")
+            else:
+                print(f"Unsupported file type: {file_ext}. Supported: .pdf, .pptx, .ppt, .xls, .xlsx")
+        else:
+            print(f"File not found: {file_path}")
+    
+    return files
 
 # =============================================================================
 # VECTOR DATABASE MANAGEMENT
@@ -341,7 +845,7 @@ Answer:
 class VectorStoreManager:
     """Vector database persistence and loading"""
     
-    def __init__(self, persist_directory: str = "chromadb_new"):
+    def __init__(self, persist_directory: str = "chromadb_v1"):
         self.persist_directory = persist_directory
         self.embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     
@@ -1119,519 +1623,56 @@ class UnifiedDocumentParser:
             'pictures': []
         }
 
-class TextSplitter:
-    """Document chunking with format-specific strategies"""
-    
-    def __init__(self, chunk_size: int = 300, chunk_overlap: int = 50):
-        self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
-        self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            model_name="gpt-4o-mini",
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap
-        )
-    
-    def split_document(self, document_data: Dict) -> List[Document]:
-        """Split document using format-specific strategies"""
-        doc_type = document_data['metainfo']['document_type']
-        
-        if doc_type == 'excel':
-            return self._split_excel_document(document_data)
-        elif doc_type == 'pptx':
-            return self._split_pptx_document(document_data)
-        else:
-            # Use default splitting for PDF and other formats
-            return self._split_default_document(document_data)
-    
-    def _split_excel_document(self, document_data: Dict) -> List[Document]:
-        """Excel-specific chunking: preserve table structure and relationships"""
-        chunks = []
-        
-        for page in document_data['content']['pages']:
-            page_text = page.get('text', '')
-            if not page_text.strip():
-                continue
-            
-            # Parse sheet content
-            sheet_chunks = self._split_excel_sheet(page_text, page['page'])
-            chunks.extend(sheet_chunks)
-        
-        return chunks
-    
-    def _split_excel_sheet(self, sheet_text: str, page_num: int) -> List[Document]:
-        """Split Excel sheet while preserving table structure"""
-        documents = []
-        lines = sheet_text.split('\n')
-        
-        if not lines:
-            return documents
-        
-        # Extract sheet name and headers
-        sheet_info = []
-        data_rows = []
-        headers = ""
-        
-        for i, line in enumerate(lines):
-            if line.startswith('Sheet:'):
-                sheet_info.append(line)
-            elif line.startswith('Headers:'):
-                headers = line
-                sheet_info.append(line)
-            elif line.startswith('Row'):
-                data_rows.append(line)
-        
-        # Create chunks with preserved context
-        context_header = '\n'.join(sheet_info)
-        
-        # Group rows into meaningful chunks (preserve relationships)
-        row_groups = []
-        current_group = []
-        current_size = len(context_header)
-        
-        for row in data_rows:
-            row_size = len(row)
-            if current_size + row_size > self.chunk_size and current_group:
-                row_groups.append(current_group.copy())
-                current_group = [row]
-                current_size = len(context_header) + row_size
-            else:
-                current_group.append(row)
-                current_size += row_size
-        
-        if current_group:
-            row_groups.append(current_group)
-        
-        # Create documents with full context
-        for i, group in enumerate(row_groups):
-            chunk_content = context_header + '\n\n' + '\n'.join(group)
-            
-            doc = Document(
-                page_content=chunk_content.strip(),
-                metadata={
-                    "page": page_num,
-                    "chunk": i + 1,
-                    "total_chunks": len(row_groups),
-                    "content_type": "excel_table",
-                    "has_headers": bool(headers)
-                }
-            )
-            documents.append(doc)
-        
-        return documents
-    
-    def _split_pptx_document(self, document_data: Dict) -> List[Document]:
-        """PPTX-specific chunking: preserve slide structure and object relationships"""
-        chunks = []
-        
-        for page in document_data['content']['pages']:
-            page_text = page.get('text', '')
-            if not page_text.strip():
-                continue
-            
-            slide_chunks = self._split_pptx_slide(page_text, page['page'])
-            chunks.extend(slide_chunks)
-        
-        return chunks
-    
-    def _split_pptx_slide(self, slide_text: str, page_num: int) -> List[Document]:
-        """Split PPTX slide while preserving object relationships"""
-        documents = []
-        
-        # Parse slide content by object types
-        content_blocks = self._parse_pptx_content_blocks(slide_text)
-        
-        if not content_blocks:
-            return documents
-        
-        # Group related content blocks
-        grouped_blocks = self._group_pptx_content(content_blocks)
-        
-        # Create chunks from grouped content
-        for i, group in enumerate(grouped_blocks):
-            chunk_content = '\n\n'.join(group['content'])
-            
-            if chunk_content.strip():
-                doc = Document(
-                    page_content=chunk_content.strip(),
-                    metadata={
-                        "page": page_num,
-                        "chunk": i + 1,
-                        "total_chunks": len(grouped_blocks),
-                        "content_type": "pptx_slide",
-                        "object_types": ",".join(group['types']) if group['types'] else ""
-                    }
-                )
-                documents.append(doc)
-        
-        return documents
-    
-    def _parse_pptx_content_blocks(self, slide_text: str) -> List[Dict]:
-        """Parse PPTX slide into content blocks by type"""
-        blocks = []
-        lines = slide_text.split('\n\n')
-        
-        for line_group in lines:
-            if not line_group.strip():
-                continue
-            
-            # Identify content type
-            content_type = 'text'
-            if line_group.startswith('Table:'):
-                content_type = 'table'
-            elif line_group.startswith('Chart:'):
-                content_type = 'chart'
-            elif line_group.startswith('Image:'):
-                content_type = 'image'
-            elif line_group.startswith('Text Frame:'):
-                content_type = 'text_frame'
-            elif line_group.startswith('Group:'):
-                content_type = 'group'
-            
-            blocks.append({
-                'content': line_group.strip(),
-                'type': content_type,
-                'size': len(line_group)
-            })
-        
-        return blocks
-    
-    def _group_pptx_content(self, content_blocks: List[Dict]) -> List[Dict]:
-        """Group PPTX content blocks intelligently"""
-        groups = []
-        current_group = {'content': [], 'types': set(), 'size': 0}
-        
-        for block in content_blocks:
-            # Keep tables and charts as separate chunks for better retrieval
-            if block['type'] in ['table', 'chart'] and current_group['content']:
-                groups.append({
-                    'content': current_group['content'].copy(),
-                    'types': list(current_group['types'])
-                })
-                current_group = {'content': [], 'types': set(), 'size': 0}
-            
-            # Add block to current group
-            current_group['content'].append(block['content'])
-            current_group['types'].add(block['type'])
-            current_group['size'] += block['size']
-            
-            # If it's a table or chart, create separate chunk
-            if block['type'] in ['table', 'chart']:
-                groups.append({
-                    'content': current_group['content'].copy(),
-                    'types': list(current_group['types'])
-                })
-                current_group = {'content': [], 'types': set(), 'size': 0}
-            # If group is getting too large, split it
-            elif current_group['size'] > self.chunk_size:
-                groups.append({
-                    'content': current_group['content'].copy(),
-                    'types': list(current_group['types'])
-                })
-                current_group = {'content': [], 'types': set(), 'size': 0}
-        
-        # Add remaining content
-        if current_group['content']:
-            groups.append({
-                'content': current_group['content'],
-                'types': list(current_group['types'])
-            })
-        
-        return groups
-    
-    def _split_default_document(self, document_data: Dict) -> List[Document]:
-        """Default chunking strategy for PDF and other formats"""
-        chunks = []
-        
-        for page in document_data['content']['pages']:
-            page_text = page.get('text', '')
-            if page_text.strip():
-                page_chunks = self._split_page_text(page_text, page['page'])
-                chunks.extend(page_chunks)
-        
-        return chunks
-    
-    def _split_page_text(self, page_text: str, page_num: int) -> List[Document]:
-        """Default page text splitting"""
-        text_chunks = self.text_splitter.split_text(page_text)
-        documents = []
-        
-        for i, chunk in enumerate(text_chunks):
-            if chunk.strip():
-                doc = Document(
-                    page_content=chunk.strip(),
-                    metadata={
-                        "page": page_num,
-                        "chunk": i + 1,
-                        "total_chunks": len(text_chunks)
-                    }
-                )
-                documents.append(doc)
-        
-        return documents
-
-# =============================================================================
-# FILE INPUT SYSTEM
-# =============================================================================
-
-def get_user_files() -> List[str]:
-    """Get file paths from user input"""
-    print("Please enter file paths for processing.")
-    print("Supported formats: PDF , PPTX , XLS/XLSX ")
-    print("Enter file paths one by one. Type 'done' when finished.....")
-    
-    files = []
-    while True:
-        file_path = input(f"File {len(files) + 1} (or 'done'): ").strip()
-        
-        if file_path.lower() == 'done':
-            break
-        
-        if not file_path:
-            continue
-        
-        if os.path.exists(file_path):
-            file_ext = Path(file_path).suffix.lower()
-            if file_ext in ['.pdf', '.pptx', '.ppt', '.xls', '.xlsx']:
-                files.append(file_path)
-                print(f"Added: {file_path}")
-            else:
-                print(f"Unsupported file type: {file_ext}. Supported: .pdf, .pptx, .ppt, .xls, .xlsx")
-        else:
-            print(f"File not found: {file_path}")
-    
-    return files
-
-# =============================================================================
-# INGESTION SYSTEM
-# =============================================================================
-
-@dataclass
-class GraphState:
-    """State management for the RAG workflow graph"""
-    docs: Sequence[Union[str, Document]] = field(default_factory=list)
-    vectorstore: Any = None
-    question: str = ""
-    retrieved_docs: List[Document] = field(default_factory=list)
-    answer: str = ""
-    
-    # Enhanced state fields
-    parsed_reports: List[Dict] = field(default_factory=list)
-    vector_results: List[Dict] = field(default_factory=list)
-    reranked_results: List[Dict] = field(default_factory=list)
-    final_context: str = ""
-    structured_answer: Dict = field(default_factory=dict)
-    skip_parsing: bool = False
-    
-    # Performance tracking fields
-    start_time: float = 0.0
-    end_time: float = 0.0
-    retrieval_time: float = 0.0
-    generation_time: float = 0.0
-    total_time: float = 0.0
-    input_tokens: int = 0
-    output_tokens: int = 0
-    throughput_tokens_per_second: float = 0.0
-
-
-
-def ingest_node(state: GraphState) -> GraphState:
-    """Parse and ingest documents using unified parsing system"""
-    print("Starting document ingestion...")
-    
-    parsed_reports = []
-    parser = UnifiedDocumentParser()
-    text_splitter = TextSplitter()
-    
-    if state.docs and isinstance(state.docs[0], str):
-        successful_count = 0
-        failed_count = 0
-        
-        for file_path in state.docs:
-            if os.path.exists(str(file_path)):
-                try:
-                    report = parser.parse_document(str(file_path))
-                    
-                    if report['metainfo']['document_type'] == 'failed':
-                        print(f"Skipping failed document: {file_path}")
-                        failed_count += 1
-                        continue
-                    
-                    chunks = text_splitter.split_document(report)
-                    
-                    # Add metadata to chunks
-                    for chunk in chunks:
-                        chunk.metadata.update({
-                            "source_file": os.path.basename(str(file_path)),
-                            "document_type": report['metainfo'].get('document_type', 'unknown'),
-                            "sha1_name": report['metainfo'].get('sha1_name', '')
-                        })
-                    
-                    parsed_reports.append({
-                        'file_path': file_path,
-                        'report': report,
-                        'chunks': chunks
-                    })
-                    
-                    successful_count += 1
-                    print(f"Successfully parsed: {file_path} ({len(chunks)} chunks)")
-                    
-                except Exception as e:
-                    print(f"Failed to parse {file_path}: {e}")
-                    failed_count += 1
-            else:
-                print(f"Warning: File not found: {file_path}")
-                failed_count += 1
-        
-        print(f"Parsing summary: {successful_count} successful, {failed_count} failed")
-        
-        if successful_count == 0:
-            print("Error: No documents were successfully parsed. Check file formats and paths.")
-            raise RuntimeError("Document parsing failed for all files")
-    
-    # Flatten all chunks
-    all_chunks = []
-    for parsed_report in parsed_reports:
-        all_chunks.extend(parsed_report['chunks'])
-    
-    print(f"Ingested {len(parsed_reports)} documents with {len(all_chunks)} chunks")
-    
-    return GraphState(
-        docs=all_chunks,
-        vectorstore=state.vectorstore,
-        question=state.question,
-        parsed_reports=parsed_reports
-    )
-
-def embed_node(state: GraphState) -> GraphState:
-    """Create vector embeddings for document chunks"""
-    print("Creating vector embeddings...")
-    
-    if state.vectorstore is None and state.docs:
-        vs_manager = VectorStoreManager()
-        document_list = [doc for doc in state.docs if isinstance(doc, Document)]
-        
-        if document_list:
-            vectorstore = vs_manager.create_vectorstore(document_list)
-            print(f"Created vector store with {len(document_list)} documents")
-        else:
-            vectorstore = None
-    else:
-        vectorstore = state.vectorstore
-    
-    return GraphState(
-        docs=state.docs,
-        vectorstore=vectorstore,
-        question=state.question,
-        parsed_reports=state.parsed_reports
-    )
-
-# =============================================================================
-# PERFORMANCE TRACKING UTILITIES
-# =============================================================================
-
-def count_tokens(text: str, model: str = "gpt-4o-mini") -> int:
-    """
-    Count tokens in text using OpenAI's official tiktoken library.
-    This is the exact same method used by OpenAI for billing and API limits.
-    """
-    try:
-        # Use model-specific encoding (most accurate)
-        encoding = tiktoken.encoding_for_model(model)
-        return len(encoding.encode(text))
-    except KeyError:
-        # If model not found, use the encoding that gpt-4o-mini uses
-        try:
-            encoding = tiktoken.get_encoding("o200k_base")  # GPT-4o encoding
-            return len(encoding.encode(text))
-        except Exception:
-            # Last resort: use cl100k_base (GPT-4/ChatGPT encoding)
-            encoding = tiktoken.get_encoding("cl100k_base")
-            return len(encoding.encode(text))
-
-def calculate_throughput(tokens: int, time_seconds: float) -> float:
-    """Calculate tokens per second throughput"""
-    if time_seconds <= 0:
-        return 0.0
-    return round(tokens / time_seconds, 2)
-
 # =============================================================================
 # RETRIEVAL SYSTEM
 # =============================================================================
 
-class VectorRetriever:
-    """Vector-based document retrieval using embedding model and vector database"""
-    
-    def __init__(self, vectorstore):
-        self.vectorstore = vectorstore
-    
-    def retrieve(self, query: str, top_k: int = 30) -> List[Dict]:
-        """Retrieve chunks using vector similarity search"""
-        if not self.vectorstore:
-            return []
-        
-        docs_with_scores = self.vectorstore.similarity_search_with_score(query, k=top_k)
-        
-        results = []
-        for doc, score in docs_with_scores:
-            result = {
-                'text': doc.page_content,
-                'page': doc.metadata.get('page', 0),
-                'chunk': doc.metadata.get('chunk', 1),
-                'distance': float(score),
-                'source_file': doc.metadata.get('source_file', ''),
-                'document_type': doc.metadata.get('document_type', 'unknown'),
-                'metadata': doc.metadata
-            }
-            results.append(result)
-        
-        return results
+class RetrievalRankingSingleBlock(BaseModel):
+    """Rank retrieved text block relevance to a query."""
+    reasoning: str = Field(description="Analysis of the block, identifying key information and how it relates to the query")
+    relevance_score: float = Field(description="Relevance score from 0 to 1, where 0 is Completely Irrelevant and 1 is Perfectly Relevant")
 
-class ParentPageAggregator:
-    """Parent page retrieval with deduplication from chunk metadata"""
-    
-    def __init__(self, parsed_reports: List[Dict]):
-        self.parsed_reports = parsed_reports
-        self.page_content_map = self._build_page_content_map()
-    
-    def _build_page_content_map(self) -> Dict[int, str]:
-        """Build mapping from page numbers to full page content"""
-        page_map = {}
-        for report in self.parsed_reports:
-            for page_data in report['report']['content']['pages']:
-                page_num = page_data['page']
-                page_map[page_num] = page_data['text']
-        return page_map
-    
-    def aggregate_to_parent_pages(self, chunk_results: List[Dict]) -> List[Dict]:
-        """Extract parent pages from chunks and deduplicate"""
-        seen_pages = set()
-        parent_results = []
-        
-        for chunk_result in chunk_results:
-            page_num = chunk_result['page']
-            
-            if page_num not in seen_pages:
-                seen_pages.add(page_num)
-                
-                page_content = self.page_content_map.get(page_num, chunk_result['text'])
-                
-                parent_result = {
-                    'text': page_content,
-                    'page': page_num,
-                    'distance': chunk_result['distance'],
-                    'source_file': chunk_result['source_file'],
-                    'document_type': chunk_result['document_type'],
-                    'metadata': chunk_result['metadata']
-                }
-                parent_results.append(parent_result)
-        
-        return parent_results
+class RetrievalRankingMultipleBlocks(BaseModel):
+    """Rank retrieved multiple text blocks relevance to a query."""
+    block_rankings: List[RetrievalRankingSingleBlock] = Field(
+        description="A list of text blocks and their associated relevance scores."
+    )
 
 class LLMReranker:
-    """LLM-based reranking to adjust relevance scores for pages"""
+    """Enhanced LLM-based reranking with detailed reasoning for page relevance scoring"""
     
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        
+        # Enhanced system prompt for reranking
+        self.system_prompt_multiple = """
+You are a RAG (Retrieval-Augmented Generation) retrieval ranker.
+
+You will receive a query and several retrieved text blocks related to that query. Your task is to evaluate and score each block based on its relevance to the query provided.
+
+Instructions:
+
+1. Reasoning: 
+   Analyze each block by identifying key information and how it relates to the query. Consider whether the block provides direct answers, partial insights, or background context relevant to the query. Explain your reasoning in a few sentences, referencing specific elements of the block to justify your evaluation. Avoid assumptions—focus solely on the content provided.
+
+2. Relevance Score (0 to 1, in increments of 0.1):
+   0 = Completely Irrelevant: The block has no connection or relation to the query.
+   0.1 = Virtually Irrelevant: Only a very slight or vague connection to the query.
+   0.2 = Very Slightly Relevant: Contains an extremely minimal or tangential connection.
+   0.3 = Slightly Relevant: Addresses a very small aspect of the query but lacks substantive detail.
+   0.4 = Somewhat Relevant: Contains partial information that is somewhat related but not comprehensive.
+   0.5 = Moderately Relevant: Addresses the query but with limited or partial relevance.
+   0.6 = Fairly Relevant: Provides relevant information, though lacking depth or specificity.
+   0.7 = Relevant: Clearly relates to the query, offering substantive but not fully comprehensive information.
+   0.8 = Very Relevant: Strongly relates to the query and provides significant information.
+   0.9 = Highly Relevant: Almost completely answers the query with detailed and specific information.
+   1 = Perfectly Relevant: Directly and comprehensively answers the query with all the necessary specific information.
+
+3. Additional Guidance:
+   - Objectivity: Evaluate blocks based only on their content relative to the query.
+   - Clarity: Be clear and concise in your justifications.
+   - No assumptions: Do not infer information beyond what's explicitly stated in the blocks.
+"""
     
     def rerank_documents(self, query: str, documents: List[Dict], 
                         documents_batch_size: int = 3, llm_weight: float = 0.7) -> List[Dict]:
@@ -1670,57 +1711,146 @@ class LLMReranker:
         return all_results
     
     def _rerank_batch(self, texts: List[str], question: str) -> List[float]:
-        """Rerank a batch of texts using LLM"""
+        """Enhanced unified reranking with detailed reasoning and robust parsing"""
         if not texts:
             return []
         
-        if len(texts) == 1:
-            passages_text = f"\nPassage 1:\n{texts[0][:800]}...\n"
-        else:
-            passages_text = ""
-            for i, text in enumerate(texts, 1):
-                passages_text += f"\nPassage {i}:\n{text[:800]}...\n"
+        # Prepare blocks with appropriate truncation
+        blocks_text = ""
+        for i, text in enumerate(texts, 1):
+            # Use longer text for single blocks, shorter for multiple blocks
+            max_length = 1200 if len(texts) == 1 else 800
+            truncated_text = text[:max_length] + "..." if len(text) > max_length else text
+            blocks_text += f"\nBlock {i}:\n{truncated_text}\n"
         
-        prompt = f"""Rate each passage's relevance to answering the question on a scale of 0.0 to 1.0.
+        user_prompt = f"""
+Query: {question}
 
-Question: {question}
-{passages_text}
-
-Consider:
-- How directly the passage answers the question
-- The quality and specificity of information
-- Whether the passage provides the exact information needed
-
-Respond with ONLY a JSON array of scores, e.g., [0.8, 0.2, 0.9]
+Text Blocks:
+{blocks_text}
 """
         
+        # Use unified system prompt
+        system_prompt = self.system_prompt_multiple
+        
+        # Build schema string for the response
+        schema_str = """
+{
+  "block_rankings": [
+    {
+      "reasoning": "string",
+      "relevance_score": float
+    }
+  ]
+}
+"""
+        
+        full_prompt = f"{system_prompt}\n\nYour response must be a valid JSON object matching this schema:\n{schema_str}\n\nProvide one ranking object for each of the {len(texts)} blocks in order.\n\n{user_prompt}"
+        
         try:
-            response = self.llm.invoke(prompt)
-            response_content = response.content if isinstance(response, BaseMessage) else str(response)
-            
-            if isinstance(response_content, str):
-                json_match = re.search(r'\[[\d\.,\s]+\]', response_content)
-                if json_match:
-                    scores = json.loads(json_match.group())
-                    while len(scores) < len(texts):
-                        scores.append(0.3)
-                    return scores[:len(texts)]
-                else:
-                    try:
-                        scores = json.loads(response_content)
-                        while len(scores) < len(texts):
-                            scores.append(0.3)
-                        return scores[:len(texts)]
-                    except:
-                        return [0.5] * len(texts)
+            response = self.llm.invoke(full_prompt)
+            # Fix type issue by ensuring response_content is always a string
+            if isinstance(response, BaseMessage):
+                response_content = str(response.content)
             else:
-                return [0.5] * len(texts)
+                response_content = str(response)
+            
+            # Parse structured response
+            rankings = self._parse_rankings_response(response_content, len(texts))
+            return [ranking.relevance_score for ranking in rankings.block_rankings]
+            
         except Exception as e:
-            _log.warning(f"Error in LLM reranking: {e}")
+            _log.warning(f"Error in reranking batch: {e}")
             return [0.5] * len(texts)
+    
+    def _parse_rankings_response(self, response_content: str, expected_count: int) -> RetrievalRankingMultipleBlocks:
+        """Parse ranking response with comprehensive fallback strategies"""
+        try:
+            # Try direct JSON parsing
+            parsed = json.loads(response_content)
+            return RetrievalRankingMultipleBlocks(**parsed)
+        except (json.JSONDecodeError, ValueError):
+            # Try to extract JSON from markdown code blocks
+            json_patterns = [
+                r'```json\s*(\{.*?\})\s*```',
+                r'```\s*(\{.*?\})\s*```',
+                r'\{.*?\}'
+            ]
+            
+            for pattern in json_patterns:
+                json_match = re.search(pattern, response_content, re.DOTALL)
+                if json_match:
+                    try:
+                        extracted = json_match.group(1) if len(json_match.groups()) > 0 else json_match.group(0)
+                        parsed = json.loads(extracted)
+                        return RetrievalRankingMultipleBlocks(**parsed)
+                    except:
+                        continue
+            
+            # Fallback: extract scores using regex patterns
+            score_matches = re.findall(r'(?:score|relevance)[:\s]*([0-9.]+)', response_content, re.IGNORECASE)
+            scores = [max(0.0, min(1.0, float(match))) for match in score_matches[:expected_count]]
+            
+            # If not enough scores found, try alternative patterns
+            if len(scores) < expected_count:
+                number_matches = re.findall(r'[0-9.]+', response_content)
+                potential_scores = []
+                for match in number_matches:
+                    try:
+                        score = float(match)
+                        if 0.0 <= score <= 1.0:
+                            potential_scores.append(score)
+                    except ValueError:
+                        continue
+                
+                # Fill in missing scores
+                while len(scores) < expected_count and potential_scores:
+                    scores.append(potential_scores.pop(0))
+            
+            # Pad with default scores if still needed
+            while len(scores) < expected_count:
+                scores.append(0.5)
+            
+            # Create fallback rankings
+            rankings = []
+            for i, score in enumerate(scores):
+                rankings.append(RetrievalRankingSingleBlock(
+                    reasoning=f"Fallback parsing for block {i+1} - extracted score from unstructured response",
+                    relevance_score=score
+                ))
+            
+            return RetrievalRankingMultipleBlocks(block_rankings=rankings)
+
+class VectorRetriever:
+    """Vector-based document retrieval using embedding model and vector database"""
+    
+    def __init__(self, vectorstore):
+        self.vectorstore = vectorstore
+    
+    def retrieve(self, query: str, top_k: int = 30) -> List[Dict]:
+        """Retrieve chunks using vector similarity search"""
+        if not self.vectorstore:
+            return []
+        
+        docs_with_scores = self.vectorstore.similarity_search_with_score(query, k=top_k)
+        
+        results = []
+        for doc, score in docs_with_scores:
+            result = {
+                'text': doc.page_content,
+                'page': doc.metadata.get('page', 0),
+                'chunk': doc.metadata.get('chunk', 1),
+                'distance': float(score),
+                'source_file': doc.metadata.get('source_file', ''),
+                'document_type': doc.metadata.get('document_type', 'unknown'),
+                'metadata': doc.metadata
+            }
+            results.append(result)
+        
+        return results
 
 class HybridRetriever:
-    """Complete retrieval system following the six-stage pipeline"""
+    """Complete retrieval system following the five-stage pipeline"""
     
     def __init__(self, vectorstore, parsed_reports: List[Dict]):
         self.vector_retriever = VectorRetriever(vectorstore)
@@ -1834,7 +1964,7 @@ def rag_node(state: GraphState) -> GraphState:
     
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
     
-    enhanced_prompt = EnhancedRAGAnswerPrompt()
+    enhanced_prompt = RAGAnswerPrompt()
     context = state.final_context
     
     user_message = enhanced_prompt.user_prompt.format(
@@ -2010,7 +2140,7 @@ def log_node(state: GraphState) -> GraphState:
     }
     
     df = pd.DataFrame([log_entry])
-    log_file = "rag_qa_log.csv"
+    log_file = "enhanced_rag_qa_log.csv"
     
     if not os.path.exists(log_file):
         df.to_csv(log_file, index=False)
