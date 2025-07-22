@@ -111,21 +111,21 @@ graph LR
 
 ## Detailed Retrieval Pipeline
 
-### Six-Stage Retrieval Process
+### Five-Stage Retrieval Process
 
 ```mermaid
 flowchart LR
     A[Question Input] --> B[Stage 1: Vector Search]
-    B --> C[Stage 2-3: Chunk Processing]
-    C --> D[Stage 4: Parent Page Assembly]
-    D --> E[Stage 5: LLM Reranking]
-    E --> F[Stage 6: Context Assembly]
+    B --> C[Stage 2: Chunk Processing]
+    C --> D[Stage 3: Parent Page Assembly]
+    D --> E[Stage 4: LLM Reranking]
+    E --> F[Stage 5: Context Assembly]
 
     B --- S1
-    C --- S23
-    D --- S4
-    E --- S5
-    F --- S6
+    C --- S2
+    D --- S3
+    E --- S4
+    F --- S5
 
     subgraph S1 [" "]
         B1[Query Embedding]
@@ -134,26 +134,26 @@ flowchart LR
         B1 --> B2 --> B3
     end
 
-    subgraph S23 [" "]
+    subgraph S2 [" "]
         C1[Extract Metadata]
         C2[Initial Ranking]
         C1 --> C2
     end
 
-    subgraph S4 [" "]
+    subgraph S3 [" "]
         D1[Extract Pages]
         D2[Deduplicate]
         D3[Retrieve Full Content]
         D1 --> D2 --> D3
     end
 
-    subgraph S5 [" "]
+    subgraph S4 [" "]
         E1[LLM Relevance Scoring]
         E2[Score Fusion: 70% LLM + 30% Vector]
         E1 --> E2
     end
 
-    subgraph S6 [" "]
+    subgraph S5 [" "]
         F1[Select Top 10 Pages]
         F2[Format Context]
         F1 --> F2
