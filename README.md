@@ -61,7 +61,7 @@ Documents are provided through **manual file path input**:
 **Vector Database Management**
 - **VectorStoreManager**: Persistent `ChromaDB` storage and loading
 - **Automatic Detection**: Smart database existence checking
-- **Embedding Model**: OpenAI `text-embedding-3-small` (1536 dimensions)
+- **Embedding Model**: OpenAI `text-embedding-3-small` 
 
 **Retrieval System**
 - **VectorRetriever**: Semantic similarity search with scoring
