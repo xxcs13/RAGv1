@@ -263,18 +263,6 @@ File 3 (or 'done'): done
 - **PPTX**: Complete object extraction (text, tables, charts, images)
 - **Excel (.xls/.xlsx)**: Structured data parsing with `pandas`
 
-### Query Examples
-
-```bash
-# Factual Query
-Question: What is TSMC's 2024 revenue?
-
-# Analytical Query  
-Question: Analyze TSMC's competitive advantages and risks in AI market
-
-# Multi-language Query
-Question: Compare TSMC's advanced process revenue with competitors
-```
 
 ## Performance Features
 
