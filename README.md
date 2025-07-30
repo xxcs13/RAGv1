@@ -174,12 +174,6 @@ flowchart LR
 - Focus on data extraction
 - Minimal business interpretation
 
-**Example:**
-```
-Q: "What is TSMC's Q3 2024 revenue?"
-A: "According to TSMC's Q3 2024 financial report, the quarterly revenue was 759.69 billion TWD."
-```
-
 ### Analytical/Strategic Queries
 **Characteristics:**
 - Trend analysis requests
@@ -192,12 +186,6 @@ A: "According to TSMC's Q3 2024 financial report, the quarterly revenue was 759.
 - Strategic thinking and market dynamics
 - Business insights and implications
 
-**Example:**
-```
-Q: "Analyze TSMC's main revenue growth drivers for 2025"
-A: "From a strategic perspective, TSMC is positioned at the core of the AI revolution..."
-[Full business analysis with strategic insights]
-```
 
 ## Installation
 
@@ -378,16 +366,16 @@ The system automatically formats large numbers with Chinese descriptions:
 ```python
 # Adjustable in HybridRetriever.retrieve()
 llm_reranking_sample_size = 30  # Initial chunk count
-documents_batch_size = 2        # LLM batch size
-top_n = 10                      # Final pages returned
-llm_weight = 0.7               # LLM score weight
+documents_batch_size      = 2   # LLM batch size
+top_n                     = 10  # Final pages returned
+llm_weight                = 0.7 # LLM score weight
 ```
 
 ### Document Processing
 ```python
 # Adjustable in TextSplitter
-chunk_size = 300               # Tokens per chunk
-chunk_overlap = 50             # Overlap between chunks
+chunk_size     = 300            # Tokens per chunk
+chunk_overlap  = 50             # Overlap between chunks
 ```
 
 ### Performance Tuning
