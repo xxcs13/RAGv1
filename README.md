@@ -36,6 +36,7 @@ graph LR
 ### Five-Stage Retrieval Process
 
 ```mermaid
+
 flowchart LR
     A[Question Input] --> B[Stage 1: Vector Search]
     B --> C[Stage 2: Chunk Processing]
@@ -80,6 +81,7 @@ flowchart LR
         F2[Format Context]
         F1 --> F2
     end
+
 ```
 
 ## Key Design Principles
