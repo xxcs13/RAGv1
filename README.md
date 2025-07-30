@@ -3,84 +3,6 @@
 
 This system implements an RAG (Retrieval-Augmented Generation) system with question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
 
-## Key Design Principles
-
-### Multi-Language Intelligence
-- Supports documents in Traditional Chinese, Simplified Chinese, English, Japanese, and other languages
-- Cross-language relevance verification ensures no important information is missed
-- Language-agnostic content analysis and extraction
-
-### Intelligent Question Classification
-- **Factual Queries**: Direct, concise responses for specific data requests
-- **Analytical Queries**: Comprehensive business insights with strategic analysis
-- Adaptive response depth based on question complexity
-
-### Performance Monitoring
-- Real-time processing time measurement (retrieval + generation)
-- Precise token counting using OpenAI's official `tiktoken` library
-- Throughput calculation (tokens/second)
-- Comprehensive performance logging
-
-### Smart Database Management
-- Automatic detection of existing vector databases
-- Skip file input when the database is available
-- Persistent vector storage with `ChromaDB`
-- Intelligent workflow optimization
-
-## Document Source Management
-
-### Document Input Method
-Documents are provided through **manual file path input**:
-- Users manually enter file paths when no existing vector database is found
-- Interactive command-line interface prompts for file paths one by one
-- Users type 'done' when finished adding files
-- The system validates file existence and format compatibility before processing
-
-### Supported File Formats
-- **PDF**: Enhanced text and table extraction
-- **PPTX/PPT**: Comprehensive object extraction (slides, tables, charts, images)
-- **XLS/XLSX**: Structured spreadsheet parsing
-
-### File Input Workflow
-1. System checks for existing vector database
-2. If no database exists, prompts user for file paths
-3. Validates each file path and format
-4. Processes all valid documents into vector database
-5. Database persists for future sessions
-
-## System Architecture
-
-### Core Components
-
-**Document Parsing System**
-- **PDFParser**: Enhanced PDF extraction with `pdfplumber` + `pypdf` fallback
-- **PPTXParser**: Comprehensive PPTX object extraction (tables, charts, images, groups)
-- **ExcelParser**: Structured Excel parsing with `pandas`
-- **UnifiedDocumentParser**: Format-specific routing and processing
-
-**Vector Database Management**
-- **VectorStoreManager**: Persistent `ChromaDB` storage and loading
-- **Automatic Detection**: Smart database existence checking
-- **Embedding Model**: OpenAI `text-embedding-3-small` 
-
-**Retrieval System**
-- **VectorRetriever**: Semantic similarity search with scoring
-- **ParentPageAggregator**: Page-level deduplication and context assembly
-- **LLMReranker**: `GPT-4o-mini` based relevance scoring
-- **HybridRetriever**: Complete six-stage retrieval pipeline
-
-**Response Generation**
-- **EnhancedRAGAnswerPrompt**: Multi-language aware prompt system
-- **Question Type Classification**: Automatic factual vs analytical detection
-- **Business Intelligence**: Strategic analysis for complex queries
-- **Structured Output**: `JSON`-formatted responses with validation
-
-**Performance Tracking**
-- **Token Counting**: Official `tiktoken`-based calculation
-- **Time Measurement**: Precise stage-by-stage timing
-- **Throughput Analysis**: Real-time performance metrics
-- **Comprehensive Logging**: `CSV`-based performance records
-
 ## System Workflow
 
 ```mermaid
@@ -159,6 +81,84 @@ flowchart LR
         F1 --> F2
     end
 ```
+
+## Key Design Principles
+
+### Multi-Language Intelligence
+- Supports documents in Traditional Chinese, Simplified Chinese, English, Japanese, and other languages
+- Cross-language relevance verification ensures no important information is missed
+- Language-agnostic content analysis and extraction
+
+### Intelligent Question Classification
+- **Factual Queries**: Direct, concise responses for specific data requests
+- **Analytical Queries**: Comprehensive business insights with strategic analysis
+- Adaptive response depth based on question complexity
+
+### Performance Monitoring
+- Real-time processing time measurement (retrieval + generation)
+- Precise token counting using OpenAI's official `tiktoken` library
+- Throughput calculation (tokens/second)
+- Comprehensive performance logging
+
+### Smart Database Management
+- Automatic detection of existing vector databases
+- Skip file input when the database is available
+- Persistent vector storage with `ChromaDB`
+- Intelligent workflow optimization
+
+## Document Source Management
+
+### Document Input Method
+Documents are provided through **manual file path input**:
+- Users manually enter file paths when no existing vector database is found
+- Interactive command-line interface prompts for file paths one by one
+- Users type 'done' when finished adding files
+- The system validates file existence and format compatibility before processing
+
+### Supported File Formats
+- **PDF**: Enhanced text and table extraction
+- **PPTX/PPT**: Comprehensive object extraction (slides, tables, charts, images)
+- **XLS/XLSX**: Structured spreadsheet parsing
+
+### File Input Workflow
+1. System checks for existing vector database
+2. If no database exists, prompts user for file paths
+3. Validates each file path and format
+4. Processes all valid documents into vector database
+5. Database persists for future sessions
+
+## System Architecture
+
+### Core Components
+
+**Document Parsing System**
+- **PDFParser**: Enhanced PDF extraction with `pdfplumber` + `pypdf` fallback
+- **PPTXParser**: Comprehensive PPTX object extraction (tables, charts, images, groups)
+- **ExcelParser**: Structured Excel parsing with `pandas`
+- **UnifiedDocumentParser**: Format-specific routing and processing
+
+**Vector Database Management**
+- **VectorStoreManager**: Persistent `ChromaDB` storage and loading
+- **Automatic Detection**: Smart database existence checking
+- **Embedding Model**: OpenAI `text-embedding-3-small` 
+
+**Retrieval System**
+- **VectorRetriever**: Semantic similarity search with scoring
+- **ParentPageAggregator**: Page-level deduplication and context assembly
+- **LLMReranker**: `GPT-4o-mini` based relevance scoring
+- **HybridRetriever**: Complete six-stage retrieval pipeline
+
+**Response Generation**
+- **EnhancedRAGAnswerPrompt**: Multi-language aware prompt system
+- **Question Type Classification**: Automatic factual vs analytical detection
+- **Business Intelligence**: Strategic analysis for complex queries
+- **Structured Output**: `JSON`-formatted responses with validation
+
+**Performance Tracking**
+- **Token Counting**: Official `tiktoken`-based calculation
+- **Time Measurement**: Precise stage-by-stage timing
+- **Throughput Analysis**: Real-time performance metrics
+- **Comprehensive Logging**: `CSV`-based performance records
 
 ## Question Type Classification
 
