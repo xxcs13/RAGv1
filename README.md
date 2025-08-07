@@ -1,432 +1,221 @@
+# Enhanced RAG System
 
-# Overview
+A comprehensive Retrieval-Augmented Generation system built with `LangChain` and `LangGraph` frameworks, supporting multi-format document parsing, advanced chunking strategies, hybrid retrieval mechanisms, and structured answer generation with comprehensive logging and performance monitoring.
 
-This system implements an RAG (Retrieval-Augmented Generation) system with question classification, performance monitoring, and adaptive business analysis capabilities. The system supports CPU-only operation and features persistent vector database storage for optimal user experience.
+## System Overview
 
-## System Workflow
+This RAG system provides a complete document processing and question-answering pipeline that can handle PDF, PPTX, and Excel files. The system utilizes `ChromaDB` for vector storage, `OpenAI GPT-4.1-mini` for language generation, `text-embedding-3-small` for embeddings, and implements sophisticated text chunking with cross-page awareness. The workflow is orchestrated using `LangGraph` state machines for reliable and scalable processing.
 
-```mermaid
-graph LR
-    A[Startup] --> B{Database Exists?}
-    B -->|Yes| C[Load DB]
-    B -->|No| D[User Input Files]
-    
-    D --> E[Create DB]
-    C --> F[Ready]
-    E --> F
-    
-    F --> G[Question Input]
-    G --> H[Retrieval Pipeline]
-    H --> I{Question Type}
-    
-    I -->|Factual| J[Direct Answer]
-    I -->|Analytical| K[Business Analysis]
-    
-    J --> L[Performance Log]
-    K --> L
-    L --> M[Display Results]
-    
-    M --> N{Continue?}
-    N -->|Yes| G
-    N -->|No| O[Exit]
-```
-
-## Detailed Retrieval Pipeline
-
-### Five-Stage Retrieval Process
+## Workflow Architecture
 
 ```mermaid
-
-flowchart LR
-    A[Question Input] --> B[Stage 1: Vector Search]
-    B --> C[Stage 2: Chunk Processing]
-    C --> D[Stage 3: Parent Page Assembly]
-    D --> E[Stage 4: LLM Reranking]
-    E --> F[Stage 5: Context Assembly]
-
-    B --- S1
-    C --- S2
-    D --- S3
-    E --- S4
-    F --- S5
-
-    subgraph S1 [" "]
-        B1[Query Embedding]
-        B2[Similarity Search]
-        B3[Top 30 Chunks Retrieved]
-        B1 --> B2 --> B3
+graph TD
+    A[Document Input] --> B[Document Parsing]
+    B --> C[Text Chunking]
+    C --> D[Vector Embedding]
+    D --> E[Vector Database Storage]
+    
+    F[User Query] --> G[Hybrid Retrieval]
+    G --> H[LLM Reranking]
+    H --> I[Answer Generation]
+    I --> J[Structured Response]
+    J --> K[Logging & Monitoring]
+    
+    E --> G
+    
+    subgraph "Document Processing Pipeline"
+        B1[PDF Parser] --> B
+        B2[PPTX Parser] --> B
+        B3[Excel Parser] --> B
     end
-
-    subgraph S2 [" "]
-        C1[Extract Metadata]
-        C2[Initial Ranking]
-        C1 --> C2
+    
+    subgraph "Retrieval Pipeline"
+        G1[Vector Search] --> G
+        G2[Keyword Search] --> G
     end
-
-    subgraph S3 [" "]
-        D1[Extract Pages]
-        D2[Deduplicate]
-        D3[Retrieve Full Content]
-        D1 --> D2 --> D3
+    
+    subgraph "Generation Pipeline"
+        I1[Context Assembly] --> I
+        I2[Prompt Engineering] --> I
+        I3[Response Validation] --> I
     end
-
-    subgraph S4 [" "]
-        E1[LLM Relevance Scoring]
-        E2[Score Fusion: 70% LLM + 30% Vector]
-        E1 --> E2
-    end
-
-    subgraph S5 [" "]
-        F1[Select Top 10 Pages]
-        F2[Format Context]
-        F1 --> F2
-    end
-
 ```
 
-## Key Design Principles
+### Processing Workflow
 
-### Multi-Language Intelligence
-- Supports documents in Traditional Chinese, Simplified Chinese, English, Japanese, and other languages
-- Cross-language relevance verification ensures no important information is missed
-- Language-agnostic content analysis and extraction
+1. **Document Ingestion**: Multi-format document parsing with layout detection and content extraction
+2. **Text Chunking**: Advanced chunking with cross-page awareness and parent-child relationships
+3. **Vector Embedding**: Batch processing with token limit management using `text-embedding-3-small`
+4. **Storage**: Persistent vector database with metadata preservation using `ChromaDB`
+5. **Retrieval**: Hybrid search combining vector similarity and keyword matching
+6. **Reranking**: LLM-based relevance scoring for optimal context selection
+7. **Generation**: Structured answer generation with confidence scoring and source attribution
 
-### Intelligent Question Classification
-- **Factual Queries**: Direct, concise responses for specific data requests
-- **Analytical Queries**: Comprehensive business insights with strategic analysis
-- Adaptive response depth based on question complexity
+## Installation and Setup
 
-### Performance Monitoring
-- Real-time processing time measurement (retrieval + generation)
-- Precise token counting using OpenAI's official `tiktoken` library
-- Throughput calculation (tokens/second)
-- Comprehensive performance logging
-
-### Smart Database Management
-- Automatic detection of existing vector databases
-- Skip file input when the database is available
-- Persistent vector storage with `ChromaDB`
-- Intelligent workflow optimization
-
-## Document Source Management
-
-### Document Input Method
-Documents are provided through **manual file path input**:
-- Users manually enter file paths when no existing vector database is found
-- Interactive command-line interface prompts for file paths one by one
-- Users type 'done' when finished adding files
-- The system validates file existence and format compatibility before processing
-
-### Supported File Formats
-- **PDF**: Enhanced text and table extraction
-- **PPTX/PPT**: Comprehensive object extraction (slides, tables, charts, images)
-- **XLS/XLSX**: Structured spreadsheet parsing
-
-### File Input Workflow
-1. System checks for existing vector database
-2. If no database exists, prompts user for file paths
-3. Validates each file path and format
-4. Processes all valid documents into vector database
-5. Database persists for future sessions
-
-## System Architecture
-
-### Core Components
-
-**Document Parsing System**
-- **PDFParser**: Enhanced PDF extraction with `pdfplumber` + `pypdf` fallback
-- **PPTXParser**: Comprehensive PPTX object extraction (tables, charts, images, groups)
-- **ExcelParser**: Structured Excel parsing with `pandas`
-- **UnifiedDocumentParser**: Format-specific routing and processing
-
-**Vector Database Management**
-- **VectorStoreManager**: Persistent `ChromaDB` storage and loading
-- **Automatic Detection**: Smart database existence checking
-- **Embedding Model**: OpenAI `text-embedding-3-small` 
-
-**Retrieval System**
-- **VectorRetriever**: Semantic similarity search with scoring
-- **ParentPageAggregator**: Page-level deduplication and context assembly
-- **LLMReranker**: `GPT-4o-mini` based relevance scoring
-- **HybridRetriever**: Complete six-stage retrieval pipeline
-
-**Response Generation**
-- **EnhancedRAGAnswerPrompt**: Multi-language aware prompt system
-- **Question Type Classification**: Automatic factual vs analytical detection
-- **Business Intelligence**: Strategic analysis for complex queries
-- **Structured Output**: `JSON`-formatted responses with validation
-
-**Performance Tracking**
-- **Token Counting**: Official `tiktoken`-based calculation
-- **Time Measurement**: Precise stage-by-stage timing
-- **Throughput Analysis**: Real-time performance metrics
-- **Comprehensive Logging**: `CSV`-based performance records
-
-## Question Type Classification
-
-### Factual/Specific Queries
-**Characteristics:**
-- Direct data requests (revenue, dates, quantities)
-- Technical specifications
-- Simple fact extraction
-
-**Response Style:**
-- Concise and direct
-- 3-4 analysis steps
-- Focus on data extraction
-- Minimal business interpretation
-
-### Analytical/Strategic Queries
-**Characteristics:**
-- Trend analysis requests
-- Competitive positioning questions
-- Strategic implications
-
-**Response Style:**
-- Comprehensive business analysis
-- 5+ analysis steps 
-- Strategic thinking and market dynamics
-- Business insights and implications
-
-
-## Installation
-
-### Environment Creation
-
-Create a new conda environment with Python 3.10:
+### Environment Setup
 
 ```bash
+# Create conda environment
 conda create -n rag python=3.10
 conda activate rag
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Environment Variables
+
+Create a `.env` file in the project root:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+ENABLE_TELEMETRY=false  # Optional: disable telemetry for privacy
 ```
 
 ### Dependencies
 
-Install required packages using the provided requirements file:
-
-```bash
-pip install -r requirements.txt
-```
-
-### Environment Setup
-
-Create a `.env` file with your OpenAI API key:
-
-```bash
-echo "OPENAI_API_KEY=your_api_key_here" > .env
-```
-
-### Optional: Enable Telemetry
-
-```bash
-echo "ENABLE_TELEMETRY=true" >> .env
-```
+Key libraries include:
+- `langchain` and `langchain-openai` for LLM integration
+- `langgraph` for workflow orchestration
+- `chromadb` for vector database
+- `openai` GPT-4.1-mini for language generation
+- `text-embedding-3-small` for document embeddings
+- `pdfplumber` and `pypdf` for PDF processing
+- `python-pptx` for PowerPoint processing
+- `pandas` for Excel processing
+- `tiktoken` for token counting
 
 ## Usage
 
-### Basic Operation
+### Command Line Mode
 
 ```bash
-python rag.py
+# Single question processing
+python main.py "What are the key financial metrics mentioned in the documents?"
 ```
 
-### System Behavior
+### Interactive Mode
 
-**First Run (No Database):**
-1. System checks for an existing database
-2. Prompts user to input file paths manually
-3. Processes documents and creates a database
-4. Ready for questions
+```bash
+# Start interactive session
+python main.py
 
-**Subsequent Runs (Database Exists):**
-1. The system detects the existing database
-2. Automatically loads the database
-3. Immediately ready for questions
-4. No file input required
-
-### File Input Process
-
-When no database exists, the system will prompt:
-```
-Please enter file paths for processing.
-Supported formats: PDF, PPTX, XLS/XLSX
-Enter file paths one by one. Type 'done' when finished.....
-
-File 1 (or 'done'): /path/to/your/document.pdf
-Added: /path/to/your/document.pdf
-File 2 (or 'done'): /path/to/your/presentation.pptx
-Added: /path/to/your/presentation.pptx
-File 3 (or 'done'): done
-```
-
-### Supported File Formats
-
-- **PDF**: Text and table extraction with OCR fallback
-- **PPTX**: Complete object extraction (text, tables, charts, images)
-- **Excel (.xls/.xlsx)**: Structured data parsing with `pandas`
-
-
-## Performance Features
-
-### Real-Time Monitoring
-
-**Timing Measurements:**
-- Retrieval time (seconds)
-- Generation time (seconds)
-- Total processing time (seconds)
-
-**Token Analysis:**
-- Input token count (precise `tiktoken` calculation)
-- Output token count
-- Total tokens processed
-- Throughput (tokens/second)
-
-### Performance Output Example
-
-```
-Retrieval completed with 10 results in 1.234s
-Generation completed in 2.567s
-Tokens: 1,200 input + 350 output = 1,550 total
-Throughput: 410.5 tokens/second
-
-==================================================
-PERFORMANCE SUMMARY
-==================================================
-Retrieval Time: 1.234s
-Generation Time: 2.567s
-Total Processing Time: 3.801s
-Input Tokens: 1,200
-Output Tokens: 350
-Total Tokens: 1,550
-Throughput: 410.5 tokens/second
-```
-
-### Performance Logging
-
-All queries are logged to `enhanced_rag_qa_log.csv` with:
-- Question and answer content
-- Confidence levels and source attribution
-- Detailed performance metrics
-- Database usage status
-
-## Output Format
-
-### Structured JSON Response
-
-```json
-{
-  "step_by_step_analysis": "Detailed analysis (100-150+ words based on question type)",
-  "reasoning_summary": "Concise synthesis summary (50-80 words)",
-  "relevant_sources": ["source_file_page_1", "source_file_page_2"],
-  "confidence_level": "high|medium|low",
-  "final_answer": "Traditional Chinese response with business insights"
-}
-```
-
-### Number Formatting
-
-The system automatically formats large numbers with Chinese descriptions:
-
-```
-2,894,307,699(28 billion 943 million 76 thousand 99)
-289.43 billion → 2,894,300,000,000(2.89 trillion)
-```
-
-## Advanced Features
-
-### Multi-Language Processing
-- Automatic language detection and processing
-- Cross-language relevance verification
-- Unified response in Traditional Chinese
-
-### Smart Chunking Strategies
-- **Excel**: Preserve table structure and relationships
-- **PPTX**: Maintain object relationships and slide context
-- **PDF**: Enhanced text extraction with number formatting
-
-### Business Intelligence
-- Strategic analysis for complex queries
-- Competitive dynamics assessment
-- Risk and opportunity identification
-- Stakeholder impact analysis
-
-## Configuration Options
-
-### Retrieval Parameters
-```python
-# Adjustable in HybridRetriever.retrieve()
-llm_reranking_sample_size = 30  # Initial chunk count
-documents_batch_size      = 2   # LLM batch size
-top_n                     = 10  # Final pages returned
-llm_weight                = 0.7 # LLM score weight
+# Follow prompts to add documents and ask questions
+# Type 'quit' to exit
 ```
 
 ### Document Processing
-```python
-# Adjustable in TextSplitter
-chunk_size     = 300            # Tokens per chunk
-chunk_overlap  = 50             # Overlap between chunks
-```
 
-### Performance Tuning
-```python
-# Vector database location
-persist_directory = "chromadb_new"
+The system supports multiple document formats:
+- **PDF**: Advanced layout detection with multi-column support
+- **PPTX**: Complete content extraction including tables, charts, and images
+- **Excel**: Multi-sheet processing with data preservation
 
-# Embedding model
-embedding_model = "text-embedding-3-small"
+## Core Modules
 
-# LLM models
-reranking_model = "gpt-4o-mini"
-generation_model = "gpt-4o-mini"
-```
+### Configuration Management (`config.py`)
+- Environment variable handling
+- Model configuration and constants
+- System-wide settings management
 
-## Error Handling
+### Document Parsing (`parsing.py`)
+- `PDFParser`: Advanced PDF text extraction with layout analysis
+- `PPTXParser`: Comprehensive PowerPoint content extraction
+- `ExcelParser`: Multi-sheet Excel data processing
+- `UnifiedDocumentParser`: Format detection and routing
 
-### Robust Processing
-- Graceful document parsing failures
-- Multiple `PDF` extraction strategies
-- Safe `PPTX` object processing
-- Comprehensive exception handling
+### Text Processing (`chunking.py`)
+- `CrossPageTextSplitter`: Context-aware chunking across page boundaries
+- `ParentPageAggregator`: Hierarchical chunk organization
+- Token-aware splitting with configurable overlap
 
-### Performance Safeguards
-- Token calculation fallback mechanisms
-- Time measurement error recovery
-- Database connection validation
-- Memory usage optimization
+### Vector Database (`vectorstore.py`)
+- `VectorStoreManager`: Persistent storage with metadata recovery
+- Batch processing for large document sets
+- Automatic retry logic for API rate limits
 
-## Best Practices
+### Retrieval System (`retrieval.py`)
+- `HybridRetriever`: Combined vector and keyword search
+- LLM-based reranking for relevance optimization
+- Configurable retrieval parameters
 
-### Document Quality
-- Ensure clear document structure
-- Use consistent formatting
-- Include relevant metadata
-- Optimize for multi-language content
+### Answer Generation (`generation.py`)
+- `AnswerGenerator`: Structured response generation using `GPT-4.1-mini`
+- Confidence scoring and uncertainty handling
+- Source attribution and reasoning chains
 
-### Query Optimization
-- Use specific terminology for factual queries
-- Frame strategic questions clearly
-- Leverage domain knowledge
-- Consider document language diversity
+### Workflow Orchestration (`workflow.py`)
+- `LangGraph` state machine implementation
+- Separate pipelines for document processing and querying
+- Error handling and state management
 
-### System Maintenance
-- Monitor performance logs regularly
-- Clear the database when documents change significantly
-- Update dependencies periodically
-- Backup important query logs
+## Features
 
-## Extension Points
+### Advanced Document Processing
+- Multi-column PDF layout detection
+- Table and chart extraction from presentations
+- Cross-page text chunking with context preservation
+- Metadata-rich document representation
 
-### Custom Processing
-- Additional document format support
-- Custom embedding models
-- Alternative `LLM` providers
-- Enhanced business analysis frameworks
+### Intelligent Retrieval
+- Hybrid search combining semantic and keyword matching
+- LLM-powered relevance reranking
+- Configurable retrieval parameters
+- Source document tracking
 
-### Integration Options
-- External database connections
-- `API` endpoint creation
-- Batch processing capabilities
-- Real-time document monitoring
+### Structured Generation
+- Confidence-scored responses using `GPT-4.1-mini`
+- Step-by-step reasoning chains
+- Source attribution with page references
+- Uncertainty acknowledgment
 
-This enhanced `RAG` system provides a comprehensive solution for multi-language document analysis with intelligent question handling and detailed performance monitoring. 
+### Performance Monitoring
+- Comprehensive query logging
+- Processing time tracking
+- Token usage monitoring
+- Error rate analysis
+
+### Scalability Features
+- Batch processing for large document sets
+- Persistent vector database with incremental updates
+- Automatic retry logic for API failures
+- Memory-efficient chunking strategies
+
+## System Architecture
+
+The system follows a modular architecture with clear separation of concerns:
+
+- **Data Layer**: Document parsing and storage management
+- **Processing Layer**: Text chunking and vector embedding
+- **Retrieval Layer**: Hybrid search and reranking
+- **Generation Layer**: LLM-based answer synthesis using `GPT-4.1-mini`
+- **Orchestration Layer**: Workflow management and error handling
+
+Each module is designed for independent testing and maintenance, with well-defined interfaces and comprehensive error handling.
+
+## Performance Considerations
+
+- Batch processing prevents OpenAI API token limit violations
+- Persistent vector storage eliminates reprocessing overhead
+- Hybrid retrieval balances accuracy and speed
+- Token counting prevents context window overflow
+- Incremental document addition for large knowledge bases
+
+## Monitoring and Logging
+
+The system provides comprehensive logging including:
+- Query processing times and token usage
+- Retrieval effectiveness metrics
+- Generation quality indicators
+- Error tracking and debugging information
+- Performance analytics for optimization
+
+## Extensibility
+
+The modular design supports easy extension:
+- Additional document format parsers
+- Custom chunking strategies
+- Alternative embedding models
+- Enhanced retrieval algorithms
+- Specialized generation pipelines
