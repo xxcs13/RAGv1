@@ -1,4 +1,4 @@
-# Enhanced RAG System
+# RAG System
 
 A comprehensive Retrieval-Augmented Generation system built with `LangChain` and `LangGraph` frameworks, supporting multi-format document parsing, advanced chunking strategies, hybrid retrieval mechanisms, and structured answer generation with comprehensive logging and performance monitoring.
 
