@@ -8,7 +8,39 @@ This RAG system provides a complete document processing and question-answering p
 
 ## Workflow Architecture
 
-To be edited....
+```mermaid
+graph TD
+    A[Document Input] --> B[Document Parsing]
+    B --> C[Text Chunking]
+    C --> D[Vector Embedding]
+    D --> E[Vector Database Storage]
+    
+    F[User Query] --> G[Vector Retrieval]
+    G --> H[Parent Page Aggregation]
+    H --> I[LLM Reranking]
+    I --> J[Answer Generation]
+    J --> K[Structured Response]
+    K --> L[Logging & Monitoring]
+    
+    E --> G
+    
+    subgraph "Document Processing Pipeline"
+        B1[PDF Parser] --> B
+        B2[PPTX Parser] --> B
+        B3[Excel Parser] --> B
+    end
+    
+    subgraph "Retrieval Pipeline"
+        G1[Vector Search] --> G
+        H1[Cross-page Aggregation] --> H
+    end
+    
+    subgraph "Generation Pipeline"
+        I1[Context Assembly] --> I
+        I2[Prompt Engineering] --> I
+        I3[Response Validation] --> I
+    end
+```
 
 ### Processing Workflow
 
@@ -16,9 +48,10 @@ To be edited....
 2. **Text Chunking**: Advanced chunking with cross-page awareness and parent-child relationships
 3. **Vector Embedding**: Batch processing with token limit management using `text-embedding-3-small`
 4. **Storage**: Persistent vector database with metadata preservation using `ChromaDB`
-5. **Retrieval**: Hybrid search combining vector similarity and keyword matching
-6. **Reranking**: LLM-based relevance scoring for optimal context selection
-7. **Generation**: Structured answer generation with confidence scoring and source attribution
+5. **Retrieval**: Vector-based semantic search with similarity scoring
+6. **Parent Aggregation**: Cross-page chunk aggregation to parent page level
+7. **Reranking**: LLM-based relevance scoring for optimal context selection
+8. **Generation**: Structured answer generation with confidence scoring and source attribution
 
 ## Installation and Setup
 
@@ -105,9 +138,11 @@ The system supports multiple document formats:
 - Automatic retry logic for API rate limits
 
 ### Retrieval System (`retrieval.py`)
-- `HybridRetriever`: Combined vector and keyword search
-- LLM-based reranking for relevance optimization
-- Configurable retrieval parameters
+- `VectorRetriever`: Semantic similarity search using embeddings
+- `ParentPageAggregator`: Cross-page chunk aggregation to parent pages
+- `LLMReranker`: GPT-4.1-mini based relevance scoring and reranking
+- `HybridRetriever`: Complete retrieval pipeline orchestration
+- Configurable retrieval parameters and scoring weights
 
 ### Answer Generation (`generation.py`)
 - `AnswerGenerator`: Structured response generation using `GPT-4.1-mini`
@@ -128,10 +163,11 @@ The system supports multiple document formats:
 - Metadata-rich document representation
 
 ### Intelligent Retrieval
-- Hybrid search combining semantic and keyword matching
-- LLM-powered relevance reranking
-- Configurable retrieval parameters
-- Source document tracking
+- Vector-based semantic search with similarity scoring
+- Parent page aggregation for cross-page chunk handling
+- LLM-powered relevance reranking using `GPT-4.1-mini`
+- Configurable retrieval parameters and scoring weights
+- Source document tracking with page-level attribution
 
 ### Structured Generation
 - Confidence-scored responses using `GPT-4.1-mini`
@@ -157,7 +193,7 @@ The system follows a modular architecture with clear separation of concerns:
 
 - **Data Layer**: Document parsing and storage management
 - **Processing Layer**: Text chunking and vector embedding
-- **Retrieval Layer**: Hybrid search and reranking
+- **Retrieval Layer**: Vector search, parent aggregation, and LLM reranking
 - **Generation Layer**: LLM-based answer synthesis using `GPT-4.1-mini`
 - **Orchestration Layer**: Workflow management and error handling
 
@@ -167,7 +203,8 @@ Each module is designed for independent testing and maintenance, with well-defin
 
 - Batch processing prevents OpenAI API token limit violations
 - Persistent vector storage eliminates reprocessing overhead
-- Hybrid retrieval balances accuracy and speed
+- Vector-based retrieval provides fast semantic search
+- Parent page aggregation reduces redundant content
 - Token counting prevents context window overflow
 - Incremental document addition for large knowledge bases
 
