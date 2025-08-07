@@ -8,38 +8,7 @@ This RAG system provides a complete document processing and question-answering p
 
 ## Workflow Architecture
 
-```mermaid
-graph TD
-    A[Document Input] --> B[Document Parsing]
-    B --> C[Text Chunking]
-    C --> D[Vector Embedding]
-    D --> E[Vector Database Storage]
-    
-    F[User Query] --> G[Hybrid Retrieval]
-    G --> H[LLM Reranking]
-    H --> I[Answer Generation]
-    I --> J[Structured Response]
-    J --> K[Logging & Monitoring]
-    
-    E --> G
-    
-    subgraph "Document Processing Pipeline"
-        B1[PDF Parser] --> B
-        B2[PPTX Parser] --> B
-        B3[Excel Parser] --> B
-    end
-    
-    subgraph "Retrieval Pipeline"
-        G1[Vector Search] --> G
-        G2[Keyword Search] --> G
-    end
-    
-    subgraph "Generation Pipeline"
-        I1[Context Assembly] --> I
-        I2[Prompt Engineering] --> I
-        I3[Response Validation] --> I
-    end
-```
+To be edited....
 
 ### Processing Workflow
 
